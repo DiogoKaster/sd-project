@@ -28,20 +28,20 @@ public class DatabaseConnection {
             session.beginTransaction();
             session.persist(object);
             session.getTransaction().commit();
-            System.out.println("[LOG]: Objeto inserido/atualizado.");
+            System.out.println("[LOG]: Objeto inserido.");
         } catch (Exception e) {
             System.out.println("[LOG]: Erro na inserção do objeto.");
         }
     }
 
-    public void update(Object object) {
+    public void update(Object updatedObject) {
         try (Session session = factory.openSession()) {
-            session.beginTransaction();
-            session.update(object);
-            session.getTransaction().commit();
-            System.out.println("[LOG]: Objeto inserido/atualizado.");
+            Transaction transaction = session.beginTransaction();
+            session.update(updatedObject);
+            transaction.commit();
+            System.out.println("[LOG]: Objeto atualizado com sucesso.");
         } catch (Exception e) {
-            System.out.println("[LOG]: Erro na inserção do objeto.");
+            System.out.println("[LOG]: Erro na atualização do objeto.");
         }
     }
 

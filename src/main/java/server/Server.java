@@ -14,6 +14,7 @@ import helpers.Json;
 import models.Candidate;
 import models.DatabaseConnection;
 import records.*;
+import server.middlewares.Auth;
 
 public class Server extends Thread{
     private final Socket client;
@@ -68,7 +69,7 @@ public class Server extends Thread{
 
                 Response<?> response;
                 DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
-                Algorithm algorithm = Algorithm.HMAC256("DISTRIBUIDOS");
+                Auth auth = new Auth();
 
                 switch(operation){
                     case LOGIN_CANDIDATE -> {
@@ -77,17 +78,14 @@ public class Server extends Thread{
 
                         try {
                             Candidate candidate = databaseConnection.verifyLogin((String) data.get("email"), (String) data.get("password"));
-                            String token = JWT.create()
-                                    .withClaim("id", candidate.getId())
-                                    .withClaim("role", Roles.CANDIDATE.toString())
-                                    .sign(algorithm);
+                            String token = auth.generateToken(candidate.getId(), Roles.CANDIDATE.toString());
                             CandidateLoginResponse responseModel = new CandidateLoginResponse(token);
                             response = new Response<>(operation, Statuses.SUCCESS, responseModel);
                             String jsonResponse = json.toJson(response);
                             System.out.println("[LOG]: SENDING RESPONSE: " + jsonResponse);
                             out.println(jsonResponse);
                         } catch (Exception e) {
-                            response = new Response<CandidateLoginResponse>(operation, Statuses.INVALID_LOGIN, null);
+                            response = new Response<CandidateLoginResponse>(operation, Statuses.INVALID_LOGIN);
                             String jsonResponse = json.toJson(response);
                             out.println(jsonResponse);
                         }
@@ -112,23 +110,25 @@ public class Server extends Thread{
                     }
                     case LOGOUT_CANDIDATE -> {
                         System.out.println("\n[LOG]: Requested Operation: candidate logout.");
-                        LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) clientRequest.data();
-                        System.out.println("[LOG]: Token: " + data.get("token"));
+                        String token = clientRequest.token();
+                        Map<String, Claim> decoded = JWT.decode(token).getClaims();
+                        int id = decoded.get("id").asInt();
+                        Candidate candidate = databaseConnection.select(id, Candidate.class);
 
-                        CandidateLogoutResponse responseModel = new CandidateLogoutResponse();
-                        response = new Response<>(operation, Statuses.SUCCESS, responseModel);
-                        String jsonResponse = json.toJson(response);
+                        if (candidate != null) {
+                            CandidateLogoutResponse responseModel = new CandidateLogoutResponse();
+                            response = new Response<>(operation, Statuses.SUCCESS, responseModel);
+                            String jsonResponse = json.toJson(response);
 
-                        System.out.println("[LOG]: SENDING RESPONSE: " + jsonResponse);
-                        out.println(jsonResponse);
+                            System.out.println("[LOG]: SENDING RESPONSE: " + jsonResponse);
+                            out.println(jsonResponse);
+                        }
                     }
                     case LOOKUP_ACCOUNT_CANDIDATE -> {
                         System.out.println("\n[LOG]: Requested Operation: candidate look up.");
                         String token = clientRequest.token();
-                        Map<String, Claim> decoded = JWT.decode(token).getClaims();
-                        int id = decoded.get("id").asInt();
 
-                        Candidate candidate = databaseConnection.select(id, Candidate.class);
+                        Candidate candidate = databaseConnection.select(auth.getAuthId(token), Candidate.class);
 
                         CandidateLookupResponse responseModel = new CandidateLookupResponse(candidate);
                         response = new Response<>(operation, Statuses.SUCCESS, responseModel);
@@ -143,13 +143,12 @@ public class Server extends Thread{
 
                         try {
                             if (clientRequest.token() != null){
-                                Map<String, Claim> decoded = JWT.decode(clientRequest.token()).getClaims();
-                                int id = decoded.get("id").asInt();
+                                String token = clientRequest.token();
                                 Candidate candidate = new Candidate();
                                 candidate.setName((String) data.get("name"));
                                 candidate.setEmail((String) data.get("email"));
                                 candidate.setPassword((String) data.get("password"));
-                                candidate.setId(id);
+                                candidate.setId(auth.getAuthId(token));
 
                                 databaseConnection.update(candidate);
                                 CandidateUpdateResponse responseModel = new CandidateUpdateResponse();
@@ -169,9 +168,8 @@ public class Server extends Thread{
                         System.out.println("\n[LOG]: Requested Operation: candidate delete.");
                         try {
                             if (clientRequest.token() != null){
-                                Map<String, Claim> decoded = JWT.decode(clientRequest.token()).getClaims();
-                                int id = decoded.get("id").asInt();
-                                databaseConnection.delete(id, Candidate.class);
+                                String token = clientRequest.token();
+                                databaseConnection.delete(auth.getAuthId(token), Candidate.class);
                                 CandidateDeleteResponse responseModel = new CandidateDeleteResponse();
                                 response = new Response<>(operation, Statuses.SUCCESS, responseModel);
                                 String jsonResponse = json.toJson(response);
