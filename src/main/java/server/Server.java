@@ -45,9 +45,9 @@ public class Server extends Thread{
         System.out.println("New thread started");
 
         try(
-                client;
-                PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()))
+            client;
+            PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()))
         ){
             String request;
             while((request = in.readLine()) != null){

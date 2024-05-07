@@ -42,7 +42,7 @@ public class ClientConnection {
         }
         return instance;
     }
-    public void connect() throws IOException, UnknownHostException {
+    public void connect() throws IOException {
         this.socket = new Socket(SERVER_HOST, SERVER_PORT);
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));

@@ -39,33 +39,46 @@ public class CandidateRoutes {
                 candidate.setEmail((String) data.get("email"));
                 candidate.setPassword((String) data.get("password"));
 
-                databaseConnection.insert(candidate);
+                Candidate insertedCandidate = databaseConnection.insert(candidate, Candidate.class);
 
-                CandidateSignUpResponse responseModel = new CandidateSignUpResponse();
-                return new Response<>(operation, Statuses.SUCCESS, responseModel);
-
+                if (insertedCandidate != null) {
+                    CandidateSignUpResponse responseModel = new CandidateSignUpResponse();
+                    return new Response<>(operation, Statuses.SUCCESS, responseModel);
+                } else {
+                    return new Response<>(operation, Statuses.USER_EXISTS);
+                }
             }
             case LOGOUT_CANDIDATE -> {
-                System.out.println("\n[LOG]: Requested Operation: candidate logout.");
+                try {
+                    if(request.token() != null) {
+                        System.out.println("\n[LOG]: Requested Operation: candidate logout.");
 
-                String token = request.token();
-                Candidate candidate = databaseConnection.select(auth.getAuthId(token), Candidate.class);
+                        String token = request.token();
+                        Candidate candidate = databaseConnection.select(auth.getAuthId(token), Candidate.class);
 
-                if (candidate != null) {
-                    CandidateLogoutResponse responseModel = new CandidateLogoutResponse();
-                    return new Response<>(operation, Statuses.SUCCESS, responseModel);
-
+                        if (candidate != null) {
+                            CandidateLogoutResponse responseModel = new CandidateLogoutResponse();
+                            return new Response<>(operation, Statuses.SUCCESS, responseModel);
+                        }
+                    }
+                } catch (Exception e) {
+                    return new Response<>(operation, Statuses.USER_NOT_FOUND);
                 }
             }
             case LOOKUP_ACCOUNT_CANDIDATE -> {
-                System.out.println("\n[LOG]: Requested Operation: candidate look up.");
+                try {
+                    if (request.token() != null) {
+                        System.out.println("\n[LOG]: Requested Operation: candidate look up.");
 
-                String token = request.token();
-                Candidate candidate = databaseConnection.select(auth.getAuthId(token), Candidate.class);
+                        String token = request.token();
+                        Candidate candidate = databaseConnection.select(auth.getAuthId(token), Candidate.class);
 
-                CandidateLookupResponse responseModel = new CandidateLookupResponse(candidate);
-                return new Response<>(operation, Statuses.SUCCESS, responseModel);
-
+                        CandidateLookupResponse responseModel = new CandidateLookupResponse(candidate);
+                        return new Response<>(operation, Statuses.SUCCESS, responseModel);
+                    }
+                } catch (Exception e) {
+                    return new Response<>(operation, Statuses.USER_NOT_FOUND);
+                }
             }
             case UPDATE_ACCOUNT_CANDIDATE -> {
                 System.out.println("\n[LOG]: Requested Operation: candidate update.");

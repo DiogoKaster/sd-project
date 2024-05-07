@@ -44,6 +44,11 @@ public class CandidateSignUp extends JDialog {
     }
 
     private void onOK() {
+        if (emailField.getText().isEmpty() || passwordField.getPassword().length == 0 || nameField.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos.", "Campos Vazios", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         ClientConnection clientConnection = ClientConnection.getInstance();
 
         CandidateSignUpRequest signUpModel = new CandidateSignUpRequest(emailField.getText(), new String(passwordField.getPassword()), nameField.getText());
@@ -53,6 +58,11 @@ public class CandidateSignUp extends JDialog {
 
         try {
             Response<?> response = clientConnection.receive();
+
+            if(response.status() == Statuses.USER_EXISTS) {
+                JOptionPane.showMessageDialog(this, "Email já cadastrado.", "Usuário existente", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

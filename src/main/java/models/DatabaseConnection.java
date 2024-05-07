@@ -23,14 +23,17 @@ public class DatabaseConnection {
         return InstanceHolder.instance;
     }
 
-    public void insert(Object object) {
+    public <T> T insert(Object object, Class<T> returnClass) {
         try (Session session = factory.openSession()) {
             session.beginTransaction();
             session.persist(object);
             session.getTransaction().commit();
             System.out.println("[LOG]: Objeto inserido.");
+
+            return returnClass.cast(object);
         } catch (Exception e) {
             System.out.println("[LOG]: Erro na inserção do objeto.");
+            return null;
         }
     }
 
@@ -49,7 +52,7 @@ public class DatabaseConnection {
         try (Session session = factory.openSession()) {
             return session.find(returnClass, id);
         } catch (Exception e) {
-            System.out.println("[LOG]: Erro na inserção do objeto.");
+            System.out.println("[LOG]: Erro na seleção do objeto.");
         }
         return null;
     }
