@@ -20,33 +20,46 @@ public class CandidateRoutes {
                 System.out.println("\n[LOG]: Requested Operation: candidate login.");
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
 
-                try {
-                    Candidate candidate = databaseConnection.verifyLogin((String) data.get("email"), (String) data.get("password"));
-                    String token = auth.generateToken(candidate.getId(), Roles.CANDIDATE.toString());
-                    CandidateLoginResponse responseModel = new CandidateLoginResponse(token);
-                    return new Response<>(operation, Statuses.SUCCESS, responseModel);
+                String email = (String) data.get("email");
+                String password = (String) data.get("password");
 
-                } catch (Exception e) {
-                    return new Response<CandidateLoginResponse>(operation, Statuses.INVALID_LOGIN);
+                if (email != null && password != null) {
+                    try {
+                        Candidate candidate = databaseConnection.verifyLogin(email, password);
+                        String token = auth.generateToken(candidate.getId(), Roles.CANDIDATE.toString());
+                        CandidateLoginResponse responseModel = new CandidateLoginResponse(token);
+                        return new Response<>(operation, Statuses.SUCCESS, responseModel);
+
+                    } catch (Exception e) {
+                        return new Response<CandidateLoginResponse>(operation, Statuses.INVALID_LOGIN);
+                    }
                 }
+                return new Response<>(operation, Statuses.INVALID_LOGIN);
             }
             case SIGNUP_CANDIDATE -> {
                 System.out.println("\n[LOG]: Requested Operation: candidate sign up.");
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
 
-                Candidate candidate = new Candidate();
-                candidate.setName((String) data.get("name"));
-                candidate.setEmail((String) data.get("email"));
-                candidate.setPassword((String) data.get("password"));
+                String name = (String) data.get("name");
+                String email = (String) data.get("email");
+                String password = (String) data.get("password");
 
-                Candidate insertedCandidate = databaseConnection.insert(candidate, Candidate.class);
+                if (name != null && email != null && password != null) {
+                    Candidate candidate = new Candidate();
+                    candidate.setName((String) data.get("name"));
+                    candidate.setEmail((String) data.get("email"));
+                    candidate.setPassword((String) data.get("password"));
 
-                if (insertedCandidate != null) {
-                    CandidateSignUpResponse responseModel = new CandidateSignUpResponse();
-                    return new Response<>(operation, Statuses.SUCCESS, responseModel);
-                } else {
-                    return new Response<>(operation, Statuses.USER_EXISTS);
+                    Candidate insertedCandidate = databaseConnection.insert(candidate, Candidate.class);
+
+                    if (insertedCandidate != null) {
+                        CandidateSignUpResponse responseModel = new CandidateSignUpResponse();
+                        return new Response<>(operation, Statuses.SUCCESS, responseModel);
+                    } else {
+                        return new Response<>(operation, Statuses.USER_EXISTS);
+                    }
                 }
+                return new Response<>(operation, Statuses.USER_EXISTS);
             }
             case LOGOUT_CANDIDATE -> {
                 try {
@@ -84,21 +97,32 @@ public class CandidateRoutes {
                 System.out.println("\n[LOG]: Requested Operation: candidate update.");
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
 
-                try {
-                    if (request.token() != null){
-                        String token = request.token();
-                        Candidate candidate = new Candidate();
-                        candidate.setName((String) data.get("name"));
-                        candidate.setEmail((String) data.get("email"));
-                        candidate.setPassword((String) data.get("password"));
-                        candidate.setId(auth.getAuthId(token));
+                if (request.token() != null && data != null) {
+                    String token = request.token();
+                    Candidate candidate = new Candidate();
 
-                        databaseConnection.update(candidate);
+                    if (data.containsKey("name")) {
+                        candidate.setName((String) data.get("name"));
+                    }
+                    if (data.containsKey("email")) {
+                        candidate.setEmail((String) data.get("email"));
+                    }
+                    if (data.containsKey("password")) {
+                        candidate.setPassword((String) data.get("password"));
+                    }
+
+                    candidate.setId(auth.getAuthId(token));
+
+                    Candidate updatedCandidate = databaseConnection.update(candidate, Candidate.class);
+                    if(updatedCandidate != null) {
                         CandidateUpdateResponse responseModel = new CandidateUpdateResponse();
                         return new Response<>(operation, Statuses.SUCCESS, responseModel);
+                    } else {
+                        return new Response<>(operation, Statuses.INVALID_EMAIL, null);
                     }
-                } catch (Exception e) {
-                    return new Response<CandidateUpdateResponse>(operation, Statuses.INVALID_EMAIL, null);
+                }
+                else {
+                    return new Response<>(operation, Statuses.INVALID_EMAIL, null);
                 }
             }
             case DELETE_ACCOUNT_CANDIDATE -> {

@@ -37,16 +37,50 @@ public class DatabaseConnection {
         }
     }
 
-    public void update(Object updatedObject) {
+    public <T> T update(Object updatedObject, Class<T> returnClass) {
         try (Session session = factory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            session.update(updatedObject);
-            transaction.commit();
-            System.out.println("[LOG]: Objeto atualizado com sucesso.");
+
+            if (updatedObject == null) {
+                System.out.println("[LOG]: Objeto inválido para atualização.");
+                return null;
+            }
+
+            if (returnClass.equals(Candidate.class)) {
+                Candidate updatedCandidate = (Candidate) updatedObject;
+                Candidate existingCandidate = session.get(Candidate.class, updatedCandidate.getId());
+
+                if (existingCandidate != null) {
+                    if (updatedCandidate.getName() != null) {
+                        existingCandidate.setName(updatedCandidate.getName());
+                    }
+                    if (updatedCandidate.getEmail() != null) {
+                        existingCandidate.setEmail(updatedCandidate.getEmail());
+                    }
+                    if (updatedCandidate.getPassword() != null) {
+                        existingCandidate.setPassword(updatedCandidate.getPassword());
+                    }
+
+                    session.update(existingCandidate);
+
+                    transaction.commit();
+                    System.out.println("[LOG]: Objeto atualizado com sucesso.");
+                } else {
+                    System.out.println("[LOG]: Objeto não encontrado no banco de dados.");
+                }
+            } else {
+                session.update(updatedObject);
+                transaction.commit();
+                System.out.println("[LOG]: Objeto atualizado com sucesso.");
+            }
+
+            return returnClass.cast(updatedObject);
         } catch (Exception e) {
             System.out.println("[LOG]: Erro na atualização do objeto.");
+            return null;
         }
     }
+
 
     public <T> T select(int id, Class<T> returnClass){
         try (Session session = factory.openSession()) {

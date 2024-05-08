@@ -13,6 +13,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.util.Objects;
 
 public class CandidateProfile extends JDialog {
     private JPanel contentPane;
@@ -21,6 +22,10 @@ public class CandidateProfile extends JDialog {
     private JTextField nameField;
     private JTextField emailField;
     private JTextField passwordField;
+
+    private String oldName;
+    private String oldEmail;
+    private String oldPassword;
     private String token;
 
     public CandidateProfile(String token) {
@@ -54,16 +59,21 @@ public class CandidateProfile extends JDialog {
     private void onOK() {
         ClientConnection clientConnection = ClientConnection.getInstance();
 
-        CandidateUpdateRequest updateModel = new CandidateUpdateRequest(emailField.getText(), passwordField.getText(), nameField.getText());
-        Request<CandidateUpdateRequest> request = new Request<>(Operations.UPDATE_ACCOUNT_CANDIDATE, this.token, updateModel);
+        CandidateUpdateRequest currentProfile = getCurrentProfile();
 
+        if (currentProfile == null) {
+            JOptionPane.showMessageDialog(null, "No changes made.");
+            return;
+        }
+
+        Request<CandidateUpdateRequest> request = new Request<>(Operations.UPDATE_ACCOUNT_CANDIDATE, this.token, currentProfile);
         clientConnection.send(request);
 
         try {
             Response<?> response = clientConnection.receive();
 
             if (!(response.status().equals(Statuses.SUCCESS))){
-                JOptionPane.showMessageDialog(null, "Something went wrong");
+                JOptionPane.showMessageDialog(null, "Email already exists");
                 return;
             }
 
@@ -72,6 +82,8 @@ public class CandidateProfile extends JDialog {
             throw new RuntimeException(e);
         }
     }
+
+
 
     private void onCancel() {
         dispose();
@@ -96,12 +108,36 @@ public class CandidateProfile extends JDialog {
 
             LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) response.data();
 
+            oldName = (String) data.get("name");
+            oldEmail = (String) data.get("email");
+            oldPassword = (String) data.get("password");
+
             nameField.setText((String) data.get("name"));
             emailField.setText((String) data.get("email"));
             passwordField.setText((String) data.get("password"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private CandidateUpdateRequest getCurrentProfile() {
+        String currentName = nameField.getText();
+        String currentEmail = emailField.getText();
+        String currentPassword = passwordField.getText();
+
+        boolean isNameChanged = !Objects.equals(currentName, oldName);
+        boolean isEmailChanged = !Objects.equals(currentEmail, oldEmail);
+        boolean isPasswordChanged = !Objects.equals(currentPassword, oldPassword);
+
+        if (!isNameChanged && !isEmailChanged && !isPasswordChanged) {
+            return null;
+        }
+
+        return new CandidateUpdateRequest(
+                isEmailChanged ? currentEmail : null,
+                isPasswordChanged ? currentPassword : null,
+                isNameChanged ? currentName : null
+        );
     }
 
     public static void main(String[] args) {
