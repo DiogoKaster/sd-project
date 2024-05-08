@@ -125,9 +125,9 @@ public class CandidateProfile extends JDialog {
         String currentEmail = emailField.getText();
         String currentPassword = passwordField.getText();
 
-        boolean isNameChanged = !Objects.equals(currentName, oldName);
-        boolean isEmailChanged = !Objects.equals(currentEmail, oldEmail);
-        boolean isPasswordChanged = !Objects.equals(currentPassword, oldPassword);
+        boolean isNameChanged = !Objects.equals(currentName, oldName) && !currentName.isEmpty();
+        boolean isEmailChanged = !Objects.equals(currentEmail, oldEmail) && !currentEmail.isEmpty();
+        boolean isPasswordChanged = !Objects.equals(currentPassword, oldPassword) && !currentPassword.isEmpty();
 
         if (!isNameChanged && !isEmailChanged && !isPasswordChanged) {
             return null;
@@ -139,6 +139,7 @@ public class CandidateProfile extends JDialog {
                 isNameChanged ? currentName : null
         );
     }
+
 
     public static void main(String[] args) {
         CandidateProfile dialog = new CandidateProfile();
