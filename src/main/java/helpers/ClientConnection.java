@@ -1,6 +1,7 @@
 package helpers;
 
 import enums.Operations;
+import enums.Statuses;
 import records.Request;
 import records.Response;
 
@@ -57,6 +58,9 @@ public class ClientConnection {
 
     public Response<?> receive() throws IOException {
         String response= in.readLine();
+        if(response == null) {
+            return new Response<>(Operations.FORCED_QUIT, Statuses.SERVER_DOWN);
+        }
         System.out.println("[LOG]: Receiving response: " + response);
 
         return json.fromJson(response, Response.class);

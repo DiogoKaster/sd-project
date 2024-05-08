@@ -16,8 +16,8 @@ public class LoginOptions extends JDialog {
 
         candidateButton.addActionListener(e -> {
             dispose();
-            CandidateLoginView candidateLoginView = new CandidateLoginView();
-            candidateLoginView.setVisible(true);
+            CandidateLogin candidateLogin = new CandidateLogin();
+            candidateLogin.setVisible(true);
         });
 
         recruiterButton.addActionListener(e -> onCancel());

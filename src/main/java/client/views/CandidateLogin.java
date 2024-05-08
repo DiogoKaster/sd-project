@@ -4,7 +4,6 @@ import com.google.gson.internal.LinkedTreeMap;
 import enums.Operations;
 import enums.Statuses;
 import helpers.ClientConnection;
-import helpers.Json;
 import records.CandidateLoginRequest;
 import records.Request;
 import records.Response;
@@ -14,7 +13,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 
-public class CandidateLoginView extends JDialog {
+public class CandidateLogin extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -22,7 +21,7 @@ public class CandidateLoginView extends JDialog {
     private JPasswordField candidateLoginPasswordField;
     private JButton buttonSignUpCandidate;
 
-    public CandidateLoginView() {
+    public CandidateLogin() {
         setContentPane(contentPane);
         setMinimumSize(new Dimension(500, 500));
         setModal(true);
@@ -60,7 +59,12 @@ public class CandidateLoginView extends JDialog {
             LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) response.data();
 
             if (response.status().equals(Statuses.INVALID_LOGIN)){
-                JOptionPane.showMessageDialog(null, "Incorrect fields");
+                JOptionPane.showMessageDialog(null, "Invalid login");
+                return;
+            }
+
+            if (response.status().equals(Statuses.INVALID_FIELD)) {
+                JOptionPane.showMessageDialog(null, "Invalid field");
                 return;
             }
 
@@ -86,7 +90,7 @@ public class CandidateLoginView extends JDialog {
     }
 
     public static void main(String[] args) {
-        CandidateLoginView dialog = new CandidateLoginView();
+        CandidateLogin dialog = new CandidateLogin();
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);

@@ -64,13 +64,15 @@ public class CandidateHome extends JDialog {
             Response<?> response = clientConnection.receive();
 
             if (!(response.status().equals(Statuses.SUCCESS))){
-                JOptionPane.showMessageDialog(null, "Cannot Logout!");
-                return;
+                JOptionPane.showMessageDialog(null, "Server is Down");
+                dispose();
+                CandidateLogin candidateLogin = new CandidateLogin();
+                candidateLogin.setVisible(true);
             }
 
             dispose();
-            CandidateLoginView candidateLoginView = new CandidateLoginView();
-            candidateLoginView.setVisible(true);
+            CandidateLogin candidateLogin = new CandidateLogin();
+            candidateLogin.setVisible(true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -92,8 +94,8 @@ public class CandidateHome extends JDialog {
             }
 
             dispose();
-            CandidateLoginView candidateLoginView = new CandidateLoginView();
-            candidateLoginView.setVisible(true);
+            CandidateLogin candidateLogin = new CandidateLogin();
+            candidateLogin.setVisible(true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

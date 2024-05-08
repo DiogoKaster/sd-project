@@ -53,6 +53,7 @@ public class Server extends Thread{
             while((request = in.readLine()) != null){
 
                 Json json = Json.getInstance();
+                System.out.println("[LOG]: RECEIVING REQUEST: " + request);
                 Request<?> clientRequest = json.fromJson(request, Request.class);
                 CandidateRoutes candidateRoutes = new CandidateRoutes();
 

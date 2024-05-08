@@ -19,5 +19,6 @@ public enum Operations {
     DELETE_SKILL,
     INCLUDE_JOB,
     INCLUDE_SKILLS,
-    DELETE_SKILLSET
+    DELETE_SKILLSET,
+    FORCED_QUIT
 }

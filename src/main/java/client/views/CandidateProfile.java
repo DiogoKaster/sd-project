@@ -61,19 +61,19 @@ public class CandidateProfile extends JDialog {
 
         CandidateUpdateRequest currentProfile = getCurrentProfile();
 
-        if (currentProfile == null) {
-            JOptionPane.showMessageDialog(null, "No changes made.");
-            return;
-        }
-
         Request<CandidateUpdateRequest> request = new Request<>(Operations.UPDATE_ACCOUNT_CANDIDATE, this.token, currentProfile);
         clientConnection.send(request);
 
         try {
             Response<?> response = clientConnection.receive();
 
-            if (!(response.status().equals(Statuses.SUCCESS))){
-                JOptionPane.showMessageDialog(null, "Email already exists");
+            if (response.status().equals(Statuses.INVALID_FIELD)){
+                JOptionPane.showMessageDialog(null, "Invalid field");
+                return;
+            }
+
+            if (response.status().equals(Statuses.INVALID_EMAIL)) {
+                JOptionPane.showMessageDialog(null, "Invalid email");
                 return;
             }
 
@@ -82,8 +82,6 @@ public class CandidateProfile extends JDialog {
             throw new RuntimeException(e);
         }
     }
-
-
 
     private void onCancel() {
         dispose();
@@ -101,9 +99,11 @@ public class CandidateProfile extends JDialog {
         try {
             Response<?> response = clientConnection.receive();
 
-            if (!(response.status().equals(Statuses.SUCCESS))){
-                JOptionPane.showMessageDialog(null, "Something went wrong");
-                return;
+            if (response.status().equals(Statuses.USER_NOT_FOUND)){
+                JOptionPane.showMessageDialog(null, "User not found");
+                dispose();
+                CandidateHome candidateHome = new CandidateHome(this.token);
+                candidateHome.setVisible(true);
             }
 
             LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) response.data();
@@ -125,18 +125,14 @@ public class CandidateProfile extends JDialog {
         String currentEmail = emailField.getText();
         String currentPassword = passwordField.getText();
 
-        boolean isNameChanged = !Objects.equals(currentName, oldName) && !currentName.isEmpty();
-        boolean isEmailChanged = !Objects.equals(currentEmail, oldEmail) && !currentEmail.isEmpty();
-        boolean isPasswordChanged = !Objects.equals(currentPassword, oldPassword) && !currentPassword.isEmpty();
-
-        if (!isNameChanged && !isEmailChanged && !isPasswordChanged) {
-            return null;
-        }
+        boolean isNameEmpty = !currentName.isEmpty();
+        boolean isEmailEmpty = !currentEmail.isEmpty();
+        boolean isPasswordEmpty = !currentPassword.isEmpty();
 
         return new CandidateUpdateRequest(
-                isEmailChanged ? currentEmail : null,
-                isPasswordChanged ? currentPassword : null,
-                isNameChanged ? currentName : null
+                isEmailEmpty ? currentEmail : oldEmail,
+                isPasswordEmpty ? currentPassword : oldPassword,
+                isNameEmpty ? currentName : oldName
         );
     }
 

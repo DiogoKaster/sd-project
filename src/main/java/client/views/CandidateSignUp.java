@@ -3,7 +3,6 @@ package client.views;
 import enums.Operations;
 import enums.Statuses;
 import helpers.ClientConnection;
-import records.CandidateLoginRequest;
 import records.CandidateSignUpRequest;
 import records.Request;
 import records.Response;
@@ -68,14 +67,14 @@ public class CandidateSignUp extends JDialog {
         }
 
         dispose();
-        CandidateLoginView candidateLoginView = new CandidateLoginView();
-        candidateLoginView.setVisible(true);
+        CandidateLogin candidateLogin = new CandidateLogin();
+        candidateLogin.setVisible(true);
     }
 
     private void onCancel() {
         dispose();
-        CandidateLoginView candidateLoginView = new CandidateLoginView();
-        candidateLoginView.setVisible(true);
+        CandidateLogin candidateLogin = new CandidateLogin();
+        candidateLogin.setVisible(true);
     }
 
     public static void main(String[] args) {
