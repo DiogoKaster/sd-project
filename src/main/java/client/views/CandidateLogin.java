@@ -56,6 +56,14 @@ public class CandidateLogin extends JDialog {
 
         try {
             Response<?> response = clientConnection.receive();
+
+            if (response == null){
+                JOptionPane.showMessageDialog(null, "Server is Down");
+                dispose();
+                StartConnection startConnection = new StartConnection();
+                startConnection.setVisible(true);
+            }
+
             LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) response.data();
 
             if (response.status().equals(Statuses.INVALID_LOGIN)){

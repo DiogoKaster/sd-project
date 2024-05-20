@@ -58,6 +58,14 @@ public class CandidateSignUp extends JDialog {
         try {
             Response<?> response = clientConnection.receive();
 
+            if (response == null){
+                JOptionPane.showMessageDialog(null, "Server is Down");
+                dispose();
+                StartConnection startConnection = new StartConnection();
+                startConnection.setVisible(true);
+            }
+
+            assert response != null;
             if(response.status() == Statuses.USER_EXISTS) {
                 JOptionPane.showMessageDialog(this, "Email já cadastrado.", "Usuário existente", JOptionPane.ERROR_MESSAGE);
                 return;

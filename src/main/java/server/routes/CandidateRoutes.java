@@ -63,32 +63,31 @@ public class CandidateRoutes {
                 }
             }
             case LOGOUT_CANDIDATE -> {
-                try {
-                    if(request.token() != null) {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                if(tokenValid != null) {
+                    return tokenValid;
+                }
+                Candidate candidate = databaseConnection.select(auth.getAuthId(request.token()), Candidate.class);
 
-                        String token = request.token();
-                        Candidate candidate = databaseConnection.select(auth.getAuthId(token), Candidate.class);
-
-                        if (candidate != null) {
-                            CandidateLogoutResponse responseModel = new CandidateLogoutResponse();
-                            return new Response<>(operation, Statuses.SUCCESS, responseModel);
-                        }
-                    }
-                } catch (Exception e) {
+                if (candidate != null) {
+                    CandidateLogoutResponse responseModel = new CandidateLogoutResponse();
+                    return new Response<>(operation, Statuses.SUCCESS, responseModel);
+                }
+                else {
                     return new Response<>(operation, Statuses.USER_NOT_FOUND, new Object());
                 }
             }
             case LOOKUP_ACCOUNT_CANDIDATE -> {
-                if (isNullOrEmpty(request.token())){
-                    return new Response<>(operation, Statuses.INVALID_TOKEN, new Object());
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                if(tokenValid != null) {
+                    return tokenValid;
                 }
-                try {
-                    String token = request.token();
-                    Candidate candidate = databaseConnection.select(auth.getAuthId(token), Candidate.class);
-                    CandidateLookupResponse responseModel = new CandidateLookupResponse(candidate);
+                Candidate candidate = databaseConnection.select(auth.getAuthId(request.token()), Candidate.class);
 
+                if(candidate != null) {
+                    CandidateLookupResponse responseModel = new CandidateLookupResponse(candidate);
                     return new Response<>(operation, Statuses.SUCCESS, responseModel);
-                } catch (Exception e) {
+                } else {
                     return new Response<>(operation, Statuses.USER_NOT_FOUND);
                 }
             }
@@ -103,47 +102,60 @@ public class CandidateRoutes {
                     return new Response<>(operation, Statuses.INVALID_FIELD, new Object());
                 }
 
-                if (request.token() != null) {
-                    String token = request.token();
-                    Candidate candidate = new Candidate();
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                if(tokenValid != null) {
+                    return tokenValid;
+                }
 
-                    if (data.containsKey("name")) {
-                        candidate.setName(name);
-                    }
-                    if (data.containsKey("email")) {
-                        candidate.setEmail(email);
-                    }
-                    if (data.containsKey("password")) {
-                        candidate.setPassword(password);
-                    }
+                Candidate candidate = new Candidate();
 
-                    candidate.setId(auth.getAuthId(token));
+                if (data.containsKey("name") && !(isNullOrEmpty(name))) {
+                    candidate.setName(name);
+                }
+                if (data.containsKey("email") && !(isNullOrEmpty(email))) {
+                    candidate.setEmail(email);
+                }
+                if (data.containsKey("password") && !(isNullOrEmpty(password))) {
+                    candidate.setPassword(password);
+                }
 
-                    Candidate updatedCandidate = databaseConnection.update(candidate, Candidate.class);
-                    if(updatedCandidate != null) {
-                        CandidateUpdateResponse responseModel = new CandidateUpdateResponse();
-                        return new Response<>(operation, Statuses.SUCCESS, responseModel);
-                    } else {
-                        return new Response<>(operation, Statuses.INVALID_EMAIL, new Object());
-                    }
+                candidate.setId(auth.getAuthId(request.token()));
+
+                Candidate updatedCandidate = databaseConnection.update(candidate, Candidate.class);
+                if(updatedCandidate != null) {
+                    CandidateUpdateResponse responseModel = new CandidateUpdateResponse();
+                    return new Response<>(operation, Statuses.SUCCESS, responseModel);
+                } else {
+                    return new Response<>(operation, Statuses.INVALID_EMAIL, new Object());
                 }
             }
             case DELETE_ACCOUNT_CANDIDATE -> {
                 System.out.println("\n[LOG]: Requested Operation: candidate delete.");
-                try {
-                    if (request.token() != null){
-                        String token = request.token();
-                        databaseConnection.delete(auth.getAuthId(token), Candidate.class);
-                        CandidateDeleteResponse responseModel = new CandidateDeleteResponse();
-                        return new Response<>(operation, Statuses.SUCCESS, responseModel);
-                    }
-                } catch (Exception e) {
-                    return new Response<>(operation, Statuses.INVALID_EMAIL, new Object());
+
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                if(tokenValid != null) {
+                    return tokenValid;
                 }
+
+                databaseConnection.delete(auth.getAuthId(request.token()), Candidate.class);
+                CandidateDeleteResponse responseModel = new CandidateDeleteResponse();
+                return new Response<>(operation, Statuses.SUCCESS, responseModel);
             }
         }
 
         return new Response<>(operation, Statuses.INVALID_OPERATION, new Object());
+    }
+
+    private Response<?> isTokenValid(Operations operation, String token) {
+        if (isNullOrEmpty(token)) {
+            return new Response<>(operation, Statuses.INVALID_FIELD, new Object());
+        }
+
+        if (auth.getAuthId(token) == -1) {
+            return new Response<>(operation, Statuses.INVALID_TOKEN, new Object());
+        }
+
+        return null;
     }
 
     private boolean isNullOrEmpty(String str) {

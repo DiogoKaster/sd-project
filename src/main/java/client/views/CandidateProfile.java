@@ -67,6 +67,14 @@ public class CandidateProfile extends JDialog {
         try {
             Response<?> response = clientConnection.receive();
 
+            if (response == null){
+                JOptionPane.showMessageDialog(null, "Server is Down");
+                dispose();
+                StartConnection startConnection = new StartConnection();
+                startConnection.setVisible(true);
+            }
+
+            assert response != null;
             if (response.status().equals(Statuses.INVALID_FIELD)){
                 JOptionPane.showMessageDialog(null, "Invalid field");
                 return;
@@ -99,6 +107,14 @@ public class CandidateProfile extends JDialog {
         try {
             Response<?> response = clientConnection.receive();
 
+            if (response == null){
+                JOptionPane.showMessageDialog(null, "Server is Down");
+                dispose();
+                StartConnection startConnection = new StartConnection();
+                startConnection.setVisible(true);
+            }
+
+            assert response != null;
             if (response.status().equals(Statuses.USER_NOT_FOUND)){
                 JOptionPane.showMessageDialog(null, "User not found");
                 dispose();

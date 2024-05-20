@@ -63,11 +63,11 @@ public class CandidateHome extends JDialog {
         try {
             Response<?> response = clientConnection.receive();
 
-            if (!(response.status().equals(Statuses.SUCCESS))){
+            if (response == null){
                 JOptionPane.showMessageDialog(null, "Server is Down");
                 dispose();
-                CandidateLogin candidateLogin = new CandidateLogin();
-                candidateLogin.setVisible(true);
+                StartConnection startConnection = new StartConnection();
+                startConnection.setVisible(true);
             }
 
             dispose();
@@ -88,6 +88,14 @@ public class CandidateHome extends JDialog {
         try {
             Response<?> response = clientConnection.receive();
 
+            if (response == null){
+                JOptionPane.showMessageDialog(null, "Server is Down");
+                dispose();
+                StartConnection startConnection = new StartConnection();
+                startConnection.setVisible(true);
+            }
+
+            assert response != null;
             if (!(response.status().equals(Statuses.SUCCESS))) {
                 JOptionPane.showMessageDialog(null, "Cannot Delete!");
                 return;
