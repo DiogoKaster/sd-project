@@ -1,5 +1,8 @@
 package client.views;
 
+import client.views.candidate.CandidateLogin;
+import client.views.recruiter.RecruiterLogin;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -20,7 +23,11 @@ public class LoginOptions extends JDialog {
             candidateLogin.setVisible(true);
         });
 
-        recruiterButton.addActionListener(e -> onCancel());
+        recruiterButton.addActionListener(e -> {
+            dispose();
+            RecruiterLogin recruiterLogin = new RecruiterLogin();
+            recruiterLogin.setVisible(true);
+        });
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {

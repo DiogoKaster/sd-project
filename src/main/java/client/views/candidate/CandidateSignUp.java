@@ -1,10 +1,10 @@
-package client.views;
+package client.views.candidate;
 
-import com.google.gson.internal.LinkedTreeMap;
+import client.views.StartConnection;
 import enums.Operations;
 import enums.Statuses;
 import helpers.ClientConnection;
-import records.CandidateLoginRequest;
+import records.candidate.CandidateSignUpRequest;
 import records.Request;
 import records.Response;
 
@@ -13,15 +13,15 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 
-public class CandidateLogin extends JDialog {
+public class CandidateSignUp extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
-    private JTextField candidateLoginEmailField;
-    private JPasswordField candidateLoginPasswordField;
-    private JButton buttonSignUpCandidate;
+    private JTextField emailField;
+    private JTextField nameField;
+    private JPasswordField passwordField;
 
-    public CandidateLogin() {
+    public CandidateSignUp() {
         setContentPane(contentPane);
         setMinimumSize(new Dimension(500, 500));
         setModal(true);
@@ -30,8 +30,6 @@ public class CandidateLogin extends JDialog {
         buttonOK.addActionListener(e -> onOK());
 
         buttonCancel.addActionListener(e -> onCancel());
-
-        buttonSignUpCandidate.addActionListener(e -> goToSignUpCandidate());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -42,15 +40,19 @@ public class CandidateLogin extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(e ->
-                onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     private void onOK() {
+        if (emailField.getText().isEmpty() || passwordField.getPassword().length == 0 || nameField.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos.", "Campos Vazios", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         ClientConnection clientConnection = ClientConnection.getInstance();
 
-        CandidateLoginRequest loginModel = new CandidateLoginRequest(candidateLoginEmailField.getText(), new String(candidateLoginPasswordField.getPassword()));
-        Request<CandidateLoginRequest> request = new Request<>(Operations.LOGIN_CANDIDATE, loginModel);
+        CandidateSignUpRequest signUpModel = new CandidateSignUpRequest(emailField.getText(), new String(passwordField.getPassword()), nameField.getText());
+        Request<CandidateSignUpRequest> request = new Request<>(Operations.SIGNUP_CANDIDATE, signUpModel);
 
         clientConnection.send(request);
 
@@ -64,41 +66,28 @@ public class CandidateLogin extends JDialog {
                 startConnection.setVisible(true);
             }
 
-            LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) response.data();
-
-            if (response.status().equals(Statuses.INVALID_LOGIN)){
-                JOptionPane.showMessageDialog(null, "Invalid login");
+            assert response != null;
+            if(response.status() == Statuses.USER_EXISTS) {
+                JOptionPane.showMessageDialog(this, "Email já cadastrado.", "Usuário existente", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
-            if (response.status().equals(Statuses.INVALID_FIELD)) {
-                JOptionPane.showMessageDialog(null, "Invalid field");
-                return;
-            }
-
-            dispose();
-            CandidateHome candidateHome = new CandidateHome((String) data.get("token"));
-            candidateHome.setVisible(true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         dispose();
+        CandidateLogin candidateLogin = new CandidateLogin();
+        candidateLogin.setVisible(true);
     }
 
     private void onCancel() {
-        // add your code here if necessary
         dispose();
-    }
-
-    private void goToSignUpCandidate() {
-        dispose();
-        CandidateSignUp candidateSignUp = new CandidateSignUp();
-        candidateSignUp.setVisible(true);
+        CandidateLogin candidateLogin = new CandidateLogin();
+        candidateLogin.setVisible(true);
     }
 
     public static void main(String[] args) {
-        CandidateLogin dialog = new CandidateLogin();
+        CandidateSignUp dialog = new CandidateSignUp();
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);

@@ -1,4 +1,4 @@
-package records;
+package records.candidate;
 
 public record CandidateLogoutResponse() {
 }

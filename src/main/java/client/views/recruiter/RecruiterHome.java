@@ -1,5 +1,8 @@
-package client.views;
+package client.views.recruiter;
 
+import client.views.StartConnection;
+import client.views.candidate.CandidateLogin;
+import client.views.candidate.CandidateProfile;
 import enums.Operations;
 import enums.Statuses;
 import helpers.ClientConnection;
@@ -11,28 +14,27 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 
-public class CandidateHome extends JDialog {
+public class RecruiterHome extends JDialog {
     private JPanel contentPane;
-    private JButton buttonOK;
+    private JButton buttonLookUp;
     private JButton buttonLogout;
-    private String token;
-
-    private JLabel userName;
     private JButton buttonDelete;
 
-    public CandidateHome(String token) {
+    private String token;
+
+    public RecruiterHome(String token) {
         this();
         this.token = token;
     }
-    public CandidateHome() {
+    public RecruiterHome() {
         setContentPane(contentPane);
         setMinimumSize(new Dimension(500, 500));
         setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
+        getRootPane().setDefaultButton(buttonLookUp);
 
-        buttonOK.addActionListener(e -> onOK());
+        buttonLookUp.addActionListener(e -> onLookUp());
 
-        buttonLogout.addActionListener(e -> onCancel());
+        buttonLogout.addActionListener(e -> onLogout());
 
         buttonDelete.addActionListener(e -> onDelete());
 
@@ -40,23 +42,24 @@ public class CandidateHome extends JDialog {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                onCancel();
+                onLogout();
             }
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onLogout(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
-    private void onOK() {
+    private void onLookUp() {
         dispose();
-        CandidateProfile candidateProfile = new CandidateProfile(this.token);
-        candidateProfile.setVisible(true);
+        RecruiterProfile recruiterProfile = new RecruiterProfile(this.token);
+        recruiterProfile.setVisible(true);
     }
-    private void onCancel() {
+
+    private void onLogout() {
         ClientConnection clientConnection = ClientConnection.getInstance();
 
-        Request<?> request = new Request<>(Operations.LOGOUT_CANDIDATE, this.token);
+        Request<?> request = new Request<>(Operations.LOGOUT_RECRUITER, this.token);
 
         clientConnection.send(request);
 
@@ -71,8 +74,8 @@ public class CandidateHome extends JDialog {
             }
 
             dispose();
-            CandidateLogin candidateLogin = new CandidateLogin();
-            candidateLogin.setVisible(true);
+            RecruiterLogin recruiterLogin = new RecruiterLogin();
+            recruiterLogin.setVisible(true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -81,7 +84,7 @@ public class CandidateHome extends JDialog {
     private void onDelete() {
         ClientConnection clientConnection = ClientConnection.getInstance();
 
-        Request<?> request = new Request<>(Operations.DELETE_ACCOUNT_CANDIDATE, this.token);
+        Request<?> request = new Request<>(Operations.DELETE_ACCOUNT_RECRUITER, this.token);
 
         clientConnection.send(request);
 
@@ -102,15 +105,15 @@ public class CandidateHome extends JDialog {
             }
 
             dispose();
-            CandidateLogin candidateLogin = new CandidateLogin();
-            candidateLogin.setVisible(true);
+            RecruiterLogin recruiterLogin = new RecruiterLogin();
+            recruiterLogin.setVisible(true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     public static void main(String[] args) {
-        CandidateHome dialog = new CandidateHome();
+        RecruiterHome dialog = new RecruiterHome();
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);

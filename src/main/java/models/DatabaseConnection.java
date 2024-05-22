@@ -68,6 +68,34 @@ public class DatabaseConnection {
                 } else {
                     System.out.println("[LOG]: Objeto não encontrado no banco de dados.");
                 }
+            } else if (returnClass.equals(Recruiter.class)) {
+                Recruiter updatedRecruiter = (Recruiter) updatedObject;
+                Recruiter existingRecruiter = session.get(Recruiter.class, updatedRecruiter.getId());
+
+                if (existingRecruiter != null) {
+                    if (updatedRecruiter.getName() != null) {
+                        existingRecruiter.setName(updatedRecruiter.getName());
+                    }
+                    if (updatedRecruiter.getEmail() != null) {
+                        existingRecruiter.setEmail(updatedRecruiter.getEmail());
+                    }
+                    if (updatedRecruiter.getPassword() != null) {
+                        existingRecruiter.setPassword(updatedRecruiter.getPassword());
+                    }
+                    if (updatedRecruiter.getIndustry() != null) {
+                        existingRecruiter.setIndustry(updatedRecruiter.getIndustry());
+                    }
+                    if (updatedRecruiter.getDescription() != null) {
+                        existingRecruiter.setDescription(updatedRecruiter.getDescription());
+                    }
+
+                    session.update(existingRecruiter);
+
+                    transaction.commit();
+                    System.out.println("[LOG]: Objeto atualizado com sucesso.");
+                } else {
+                    System.out.println("[LOG]: Objeto não encontrado no banco de dados.");
+                }
             } else {
                 session.update(updatedObject);
                 transaction.commit();
@@ -106,11 +134,15 @@ public class DatabaseConnection {
         }
     }
 
-    public Candidate verifyLogin(String email, String password) {
-        Session session = factory.openSession();
-            return session.createQuery("FROM Candidate WHERE email = :email AND password = :password", Candidate.class)
+    public <T> T verifyLogin(String email, String password, Class<T> entityClass) {
+        try (Session session = factory.openSession()) {
+            return session.createQuery("FROM " + entityClass.getSimpleName() + " WHERE email = :email AND password = :password", entityClass)
                     .setParameter("email", email)
                     .setParameter("password", password)
                     .uniqueResult();
+        } catch (Exception e) {
+            System.out.println("[LOG]: Erro na verificação de login.");
+            return null;
+        }
     }
 }

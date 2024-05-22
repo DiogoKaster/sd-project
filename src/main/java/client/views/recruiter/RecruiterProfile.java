@@ -1,67 +1,76 @@
-package client.views;
+package client.views.recruiter;
 
+import client.views.StartConnection;
+import client.views.candidate.CandidateHome;
 import com.google.gson.internal.LinkedTreeMap;
 import enums.Operations;
 import enums.Statuses;
 import helpers.ClientConnection;
-import records.CandidateLookupRequest;
-import records.CandidateUpdateRequest;
 import records.Request;
 import records.Response;
+import records.candidate.CandidateUpdateRequest;
+import records.recruiter.RecruiterUpdateRequest;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.Objects;
 
-public class CandidateProfile extends JDialog {
+public class RecruiterProfile extends JDialog {
     private JPanel contentPane;
-    private JButton buttonOK;
-    private JButton buttonCancel;
+    private JButton buttonUpdate;
+    private JButton buttonHome;
     private JTextField nameField;
     private JTextField emailField;
-    private JTextField passwordField;
+    private JPasswordField passwordField;
+    private JTextField industryField;
+    private JTextField descriptionField;
 
     private String oldName;
+
     private String oldEmail;
+
     private String oldPassword;
+
+    private String oldIndustry;
+
+    private String oldDescription;
+
     private String token;
 
-    public CandidateProfile(String token) {
+    public RecruiterProfile(String token) {
         this();
         this.token = token;
         lookUp();
     }
-
-    public CandidateProfile() {
+    public RecruiterProfile() {
         setContentPane(contentPane);
         setMinimumSize(new Dimension(500, 500));
         setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
+        getRootPane().setDefaultButton(buttonUpdate);
 
-        buttonOK.addActionListener(e -> onOK());
+        buttonUpdate.addActionListener(e -> onUpdate());
 
-        buttonCancel.addActionListener(e -> onCancel());
+        buttonHome.addActionListener(e -> onGoHome());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                onCancel();
+                onGoHome();
             }
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onGoHome(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
-    private void onOK() {
+    private void onUpdate() {
         ClientConnection clientConnection = ClientConnection.getInstance();
 
-        CandidateUpdateRequest currentProfile = getCurrentProfile();
+        RecruiterUpdateRequest currentProfile = getCurrentProfile();
 
-        Request<CandidateUpdateRequest> request = new Request<>(Operations.UPDATE_ACCOUNT_CANDIDATE, this.token, currentProfile);
+        Request<?> request = new Request<>(Operations.UPDATE_ACCOUNT_RECRUITER, this.token, currentProfile);
         clientConnection.send(request);
 
         try {
@@ -91,16 +100,16 @@ public class CandidateProfile extends JDialog {
         }
     }
 
-    private void onCancel() {
+    private void onGoHome() {
         dispose();
-        CandidateHome candidateHome = new CandidateHome(this.token);
-        candidateHome.setVisible(true);
+        RecruiterHome recruiterHome = new RecruiterHome(this.token);
+        recruiterHome.setVisible(true);
     }
 
     private void lookUp() {
         ClientConnection clientConnection = ClientConnection.getInstance();
 
-        Request<?> request = new Request<>(Operations.LOOKUP_ACCOUNT_CANDIDATE, this.token);
+        Request<?> request = new Request<>(Operations.LOOKUP_ACCOUNT_RECRUITER, this.token);
 
         clientConnection.send(request);
 
@@ -118,8 +127,8 @@ public class CandidateProfile extends JDialog {
             if (response.status().equals(Statuses.USER_NOT_FOUND)){
                 JOptionPane.showMessageDialog(null, "User not found");
                 dispose();
-                CandidateHome candidateHome = new CandidateHome(this.token);
-                candidateHome.setVisible(true);
+                RecruiterHome recruiterHome = new RecruiterHome(this.token);
+                recruiterHome.setVisible(true);
             }
 
             LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) response.data();
@@ -127,34 +136,43 @@ public class CandidateProfile extends JDialog {
             oldName = (String) data.get("name");
             oldEmail = (String) data.get("email");
             oldPassword = (String) data.get("password");
+            oldIndustry = (String) data.get("industry");
+            oldDescription = (String) data.get("description");
 
-            nameField.setText((String) data.get("name"));
-            emailField.setText((String) data.get("email"));
-            passwordField.setText((String) data.get("password"));
+            nameField.setText(oldName);
+            emailField.setText(oldEmail);
+            passwordField.setText(oldPassword);
+            industryField.setText(oldIndustry);
+            descriptionField.setText(oldDescription);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private CandidateUpdateRequest getCurrentProfile() {
+    private RecruiterUpdateRequest getCurrentProfile() {
         String currentName = nameField.getText();
         String currentEmail = emailField.getText();
-        String currentPassword = passwordField.getText();
+        String currentPassword = new String(passwordField.getPassword());
+        String currentIndustry = industryField.getText();
+        String currentDescription = descriptionField.getText();
 
         boolean isNameEmpty = !currentName.isEmpty();
         boolean isEmailEmpty = !currentEmail.isEmpty();
         boolean isPasswordEmpty = !currentPassword.isEmpty();
+        boolean isIndustryEmpty = !currentIndustry.isEmpty();
+        boolean isDescriptionEmpty = !currentDescription.isEmpty();
 
-        return new CandidateUpdateRequest(
+        return new RecruiterUpdateRequest(
                 isEmailEmpty ? currentEmail : oldEmail,
                 isPasswordEmpty ? currentPassword : oldPassword,
-                isNameEmpty ? currentName : oldName
+                isNameEmpty ? currentName : oldName,
+                isIndustryEmpty ? currentIndustry : oldIndustry,
+                isDescriptionEmpty ? currentDescription : oldDescription
         );
     }
 
-
     public static void main(String[] args) {
-        CandidateProfile dialog = new CandidateProfile();
+        RecruiterProfile dialog = new RecruiterProfile();
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);

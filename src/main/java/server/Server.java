@@ -3,7 +3,7 @@ import java.io.*;
 import java.net.*;
 import helpers.Json;
 import records.*;
-import server.routes.CandidateRoutes;
+import server.routes.Routes;
 
 public class Server extends Thread{
     private final Socket client;
@@ -55,9 +55,9 @@ public class Server extends Thread{
                 Json json = Json.getInstance();
                 System.out.println("[LOG]: RECEIVING REQUEST: " + request);
                 Request<?> clientRequest = json.fromJson(request, Request.class);
-                CandidateRoutes candidateRoutes = new CandidateRoutes();
+                Routes routes = new Routes();
 
-                Response<?> response = candidateRoutes.getResponse(clientRequest);
+                Response<?> response = routes.getResponse(clientRequest);
                 String jsonResponse = json.toJson(response);
                 System.out.println("[LOG]: SENDING RESPONSE: " + jsonResponse);
                 out.println(jsonResponse);

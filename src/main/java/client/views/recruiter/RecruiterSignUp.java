@@ -1,34 +1,47 @@
-package client.views;
+package client.views.recruiter;
 
+import client.views.StartConnection;
+import client.views.candidate.CandidateLogin;
 import enums.Operations;
 import enums.Statuses;
 import helpers.ClientConnection;
-import records.CandidateSignUpRequest;
 import records.Request;
 import records.Response;
+import records.candidate.CandidateSignUpRequest;
+import records.recruiter.RecruiterSignUpRequest;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 
-public class CandidateSignUp extends JDialog {
+public class RecruiterSignUp extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JTextField emailField;
-    private JTextField nameField;
     private JPasswordField passwordField;
+    private JTextField nameField;
+    private JTextField industryField;
+    private JTextField descriptionField;
 
-    public CandidateSignUp() {
+    public RecruiterSignUp() {
         setContentPane(contentPane);
         setMinimumSize(new Dimension(500, 500));
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
-        buttonOK.addActionListener(e -> onOK());
+        buttonOK.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onOK();
+            }
+        });
 
-        buttonCancel.addActionListener(e -> onCancel());
+        buttonCancel.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onCancel();
+            }
+        });
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -39,19 +52,32 @@ public class CandidateSignUp extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onCancel();
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     private void onOK() {
-        if (emailField.getText().isEmpty() || passwordField.getPassword().length == 0 || nameField.getText().isEmpty()) {
+        if (emailField.getText().isEmpty()
+                || passwordField.getPassword().length == 0
+                || nameField.getText().isEmpty()
+                || industryField.getText().isEmpty()
+                || descriptionField.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos.", "Campos Vazios", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         ClientConnection clientConnection = ClientConnection.getInstance();
 
-        CandidateSignUpRequest signUpModel = new CandidateSignUpRequest(emailField.getText(), new String(passwordField.getPassword()), nameField.getText());
-        Request<CandidateSignUpRequest> request = new Request<>(Operations.SIGNUP_CANDIDATE, signUpModel);
+        RecruiterSignUpRequest signUpModel = new RecruiterSignUpRequest(emailField.getText(),
+                new String(passwordField.getPassword()),
+                nameField.getText(),
+                industryField.getText(),
+                descriptionField.getText()
+        );
+        Request<RecruiterSignUpRequest> request = new Request<>(Operations.SIGNUP_RECRUITER, signUpModel);
 
         clientConnection.send(request);
 
@@ -75,18 +101,18 @@ public class CandidateSignUp extends JDialog {
         }
 
         dispose();
-        CandidateLogin candidateLogin = new CandidateLogin();
-        candidateLogin.setVisible(true);
+        RecruiterLogin recruiterLogin = new RecruiterLogin();
+        recruiterLogin.setVisible(true);
     }
 
     private void onCancel() {
         dispose();
-        CandidateLogin candidateLogin = new CandidateLogin();
-        candidateLogin.setVisible(true);
+        RecruiterLogin recruiterLogin = new RecruiterLogin();
+        recruiterLogin.setVisible(true);
     }
 
     public static void main(String[] args) {
-        CandidateSignUp dialog = new CandidateSignUp();
+        RecruiterSignUp dialog = new RecruiterSignUp();
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);
