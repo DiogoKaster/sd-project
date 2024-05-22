@@ -10,5 +10,6 @@
 
         <property name="hibernate.hbm2ddl.auto">update</property>
         <mapping class="models.Candidate" />
+        <mapping class="models.Recruiter" />
     </session-factory>
 </hibernate-configuration>
