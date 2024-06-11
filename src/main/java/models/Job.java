@@ -24,13 +24,4 @@ public class Job {
 
     @Column(name = "years_of_experience", nullable = false)
     private Integer yearsOfExperience;
-
-    @Column(name = "title", nullable = false)
-    private String title;
-
-    @Column(name = "description", nullable = false)
-    private String description;
-
-    @Column(name = "searchable", nullable = false)
-    private Boolean searchable;
 }

@@ -3,6 +3,8 @@ package models;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -32,5 +34,5 @@ public class Recruiter {
     private String description;
 
     @OneToMany(mappedBy = "recruiter")
-    private Set<Job> jobs;
+    private Set<Job> jobs = new HashSet<>();
 }

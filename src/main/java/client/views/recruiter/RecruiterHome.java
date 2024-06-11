@@ -1,8 +1,6 @@
 package client.views.recruiter;
 
 import client.views.StartConnection;
-import client.views.candidate.CandidateLogin;
-import client.views.candidate.CandidateProfile;
 import enums.Operations;
 import enums.Statuses;
 import helpers.ClientConnection;
@@ -19,6 +17,7 @@ public class RecruiterHome extends JDialog {
     private JButton buttonLookUp;
     private JButton buttonLogout;
     private JButton buttonDelete;
+    private JButton buttonJobs;
 
     private String token;
 
@@ -37,6 +36,8 @@ public class RecruiterHome extends JDialog {
         buttonLogout.addActionListener(e -> onLogout());
 
         buttonDelete.addActionListener(e -> onDelete());
+
+        buttonJobs.addActionListener(e -> onGoToJobs());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -110,6 +111,12 @@ public class RecruiterHome extends JDialog {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void onGoToJobs() {
+        dispose();
+        RecruiterJobs recruiterJobs = new RecruiterJobs(this.token);
+        recruiterJobs.setVisible(true);
     }
 
     public static void main(String[] args) {

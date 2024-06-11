@@ -69,7 +69,7 @@ public class CandidateSkills extends JDialog {
         ClientConnection clientConnection = ClientConnection.getInstance();
 
         String selectedSkill = (String) skillsDropdown.getSelectedItem();
-        int experience = (int) experienceSpinner.getValue();
+        String experience = experienceSpinner.getValue().toString();
 
         CandidateIncludeSkillRequest includeSkillModel = new CandidateIncludeSkillRequest(selectedSkill, experience);
         Request<CandidateIncludeSkillRequest> request = new Request<>(Operations.INCLUDE_SKILL, this.token, includeSkillModel);
@@ -126,6 +126,7 @@ public class CandidateSkills extends JDialog {
                 LinkedTreeMap<String, String> skillInfoMap = (LinkedTreeMap<String, String>) skillInfo;
                 String skill = skillInfoMap.get("skill");
                 String experience = skillInfoMap.get("experience");
+                String id = skillInfoMap.get("id");
 
                 JButton skillButton = new JButton(skill);
                 skillButton.addActionListener(e -> {

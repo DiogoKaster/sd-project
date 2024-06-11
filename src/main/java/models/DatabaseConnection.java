@@ -168,4 +168,16 @@ public class DatabaseConnection {
             return null;
         }
     }
+
+    public <T> T selectWithJobs(int id, Class<T> returnClass) {
+        try (Session session = factory.openSession()) {
+            String hql = "FROM Recruiter r LEFT JOIN FETCH r.jobs rj LEFT JOIN FETCH rj.skill WHERE r.id = :id";
+            return session.createQuery(hql, returnClass)
+                    .setParameter("id", id)
+                    .uniqueResult();
+        } catch (Exception e) {
+            System.out.println("[LOG]: Erro na seleção do objeto com habilidades.");
+            return null;
+        }
+    }
 }
