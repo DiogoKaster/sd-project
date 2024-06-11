@@ -8,6 +8,7 @@ import models.CandidateSkill;
 import models.DatabaseConnection;
 import models.Skill;
 import records.Response;
+import records.skill.CandidateLookupSkillResponse;
 import records.skill.CandidateLookupSkillSetResponse;
 import records.skill.SkillInfo;
 import server.middlewares.Auth;
@@ -67,12 +68,65 @@ public class SkillController {
                     .collect(Collectors.toList());
 
             String skillsetSize = String.valueOf(skillInfoList.size());
-            CandidateLookupSkillSetResponse data = new CandidateLookupSkillSetResponse(skillsetSize, skillInfoList);
+            CandidateLookupSkillSetResponse responseModel = new CandidateLookupSkillSetResponse(skillsetSize, skillInfoList);
 
-            return new Response<>(Operations.LOOKUP_SKILLSET, Statuses.SUCCESS, data);
+            return new Response<>(Operations.LOOKUP_SKILLSET, Statuses.SUCCESS, responseModel);
         } catch (Exception e) {
             System.out.println("[LOG]: ERRO FEIO DE EXCEPTION NO LOOKUPSKILLSETCANDIDATE");
             return new Response<>(Operations.LOOKUP_SKILLSET, Statuses.ERROR);
+        }
+    }
+
+    public static Response<?> lookUpSkillCandidate(String token, LinkedTreeMap<String, ?> data) {
+        try {
+            String skillToFind = (String) data.get("skill");
+
+            Candidate candidate = databaseConnection.selectWithSkills(auth.getAuthId(token), Candidate.class);
+            if (candidate == null) {
+                return new Response<>(Operations.LOOKUP_SKILL, Statuses.USER_NOT_FOUND);
+            }
+
+            CandidateSkill skillInfo = candidate.getCandidateSkills().stream()
+                    .filter(cs -> cs.getSkill().getName().equals(skillToFind)).findFirst().orElse(null);
+
+            if (skillInfo == null) {
+                return new Response<>(Operations.LOOKUP_SKILL, Statuses.SKILL_NOT_EXIST);
+            }
+
+            String skill = skillInfo.getSkill().getName();
+            String experience = skillInfo.getYearsOfExperience().toString();
+
+            SkillInfo responseModel = new SkillInfo(skill, experience);
+
+            return new Response<>(Operations.LOOKUP_SKILL, Statuses.SUCCESS, responseModel);
+        } catch (Exception e) {
+            System.out.println("[LOG]: ERRO FEIO DE EXCEPTION NO DELETESKILLCANDIDATE");
+            return new Response<>(Operations.LOOKUP_SKILL, Statuses.ERROR);
+        }
+    }
+
+    public static Response<?> deleteSkillCandidate(String token, LinkedTreeMap<String, ?> data) {
+        try {
+            String skillToFind = (String) data.get("skill");
+
+            Candidate candidate = databaseConnection.selectWithSkills(auth.getAuthId(token), Candidate.class);
+            if (candidate == null) {
+                return new Response<>(Operations.DELETE_SKILL, Statuses.USER_NOT_FOUND);
+            }
+
+            CandidateSkill skillToDelete = candidate.getCandidateSkills().stream()
+                    .filter(cs -> cs.getSkill().getName().equals(skillToFind)).findFirst().orElse(null);
+
+            if (skillToDelete == null) {
+                return new Response<>(Operations.DELETE_SKILL, Statuses.SKILL_NOT_EXIST);
+            }
+
+            databaseConnection.delete(skillToDelete.getId(), CandidateSkill.class);
+
+            return new Response<>(Operations.DELETE_SKILL, Statuses.SUCCESS);
+        } catch (Exception e) {
+            System.out.println("[LOG]: ERRO FEIO DE EXCEPTION NO DELETESKILLCANDIDATE");
+            return new Response<>(Operations.DELETE_SKILL, Statuses.ERROR);
         }
     }
 }
