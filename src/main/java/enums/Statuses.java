@@ -12,6 +12,7 @@ public enum Statuses {
     INVALID_TOKEN,
     SKILL_NOT_EXIST,
     SKILL_EXISTS,
+    JOB_NOT_FOUND,
     ERROR,
 
     SERVER_DOWN

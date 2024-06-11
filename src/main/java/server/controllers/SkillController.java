@@ -8,7 +8,6 @@ import models.CandidateSkill;
 import models.DatabaseConnection;
 import models.Skill;
 import records.Response;
-import records.skill.CandidateLookupSkillResponse;
 import records.skill.CandidateLookupSkillSetResponse;
 import records.skill.SkillInfo;
 import server.middlewares.Auth;
@@ -20,10 +19,10 @@ public class SkillController {
     private static final DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
     private static final Auth auth = new Auth();
 
-    public static Response<?> includeCandidate(String token, LinkedTreeMap<String, ?> data) {
+    public static Response<?> include(String token, LinkedTreeMap<String, ?> data) {
         try {
             String skillName = (String) data.get("skill");
-            Integer experience = ((Number) data.get("experience")).intValue();
+            Integer experience = Integer.valueOf((String) data.get("experience"));
 
             Candidate candidate = databaseConnection.selectWithSkills(auth.getAuthId(token), Candidate.class);
             if (candidate == null) {
@@ -56,7 +55,7 @@ public class SkillController {
         }
     }
 
-    public static Response<?> lookUpSkillSetCandidate(String token) {
+    public static Response<?> lookUpAll(String token) {
         try {
             Candidate candidate = databaseConnection.selectWithSkills(auth.getAuthId(token), Candidate.class);
             if (candidate == null) {
@@ -64,7 +63,7 @@ public class SkillController {
             }
 
             List<SkillInfo> skillInfoList = candidate.getCandidateSkills().stream()
-                    .map(cs -> new SkillInfo(cs.getSkill().getName(), cs.getYearsOfExperience().toString()))
+                    .map(cs -> new SkillInfo(cs.getSkill().getName(), cs.getYearsOfExperience().toString(), cs.getId().toString()))
                     .collect(Collectors.toList());
 
             String skillsetSize = String.valueOf(skillInfoList.size());
@@ -77,7 +76,7 @@ public class SkillController {
         }
     }
 
-    public static Response<?> lookUpSkillCandidate(String token, LinkedTreeMap<String, ?> data) {
+    public static Response<?> lookUp(String token, LinkedTreeMap<String, ?> data) {
         try {
             String skillToFind = (String) data.get("skill");
 
@@ -105,11 +104,11 @@ public class SkillController {
         }
     }
 
-    public static Response<?> updateSkillCandidate(String token, LinkedTreeMap<String, ?> data) {
+    public static Response<?> update(String token, LinkedTreeMap<String, ?> data) {
         try {
             String currentSkillName = (String) data.get("skill");
             String newSkillName = (String) data.get("newSkill");
-            Integer experience = ((Number) data.get("experience")).intValue();
+            Integer experience = Integer.valueOf((String) data.get("experience"));
 
             // Obtém o candidato com suas habilidades
             Candidate candidate = databaseConnection.selectWithSkills(auth.getAuthId(token), Candidate.class);
@@ -147,7 +146,6 @@ public class SkillController {
                     return new Response<>(Operations.UPDATE_SKILL, Statuses.SKILL_EXISTS);
                 }
 
-                // Substitui a habilidade atual pela nova habilidade
                 existingCandidateSkill.setSkill(newSkill);
             }
 
@@ -164,7 +162,7 @@ public class SkillController {
 
 
 
-    public static Response<?> deleteSkillCandidate(String token, LinkedTreeMap<String, ?> data) {
+    public static Response<?> delete(String token, LinkedTreeMap<String, ?> data) {
         try {
             String skillToFind = (String) data.get("skill");
 

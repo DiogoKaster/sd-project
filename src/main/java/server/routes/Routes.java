@@ -5,6 +5,7 @@ import enums.Operations;
 import enums.Statuses;
 import records.*;
 import server.controllers.CandidateController;
+import server.controllers.JobController;
 import server.controllers.RecruiterController;
 import server.controllers.SkillController;
 import server.middlewares.Auth;
@@ -86,31 +87,51 @@ public class Routes {
             }
             case INCLUDE_SKILL -> {
                 Response<?> tokenValid = isTokenValid(operation, request.token());
-                if (tokenValid != null) {
-                    return tokenValid;
-                }
-
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
-                return SkillController.includeCandidate(request.token(), data);
+                return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.include(request.token(), data));
             }
             case LOOKUP_SKILLSET -> {
                 Response<?> tokenValid = isTokenValid(operation, request.token());
-                return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.lookUpSkillSetCandidate(request.token()));
+                return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.lookUpAll(request.token()));
             }
             case LOOKUP_SKILL -> {
                 Response<?> tokenValid = isTokenValid(operation, request.token());
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
-                return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.lookUpSkillCandidate(request.token(), data));
+                return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.lookUp(request.token(), data));
             }
             case UPDATE_SKILL -> {
                 Response<?> tokenValid = isTokenValid(operation, request.token());
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
-                return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.updateSkillCandidate(request.token(), data));
+                return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.update(request.token(), data));
             }
             case DELETE_SKILL -> {
                 Response<?> tokenValid = isTokenValid(operation, request.token());
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
-                return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.deleteSkillCandidate(request.token(), data));
+                return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.delete(request.token(), data));
+            }
+            case INCLUDE_JOB -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return Objects.requireNonNullElseGet(tokenValid, () -> JobController.include(request.token(), data));
+            }
+            case LOOKUP_JOBSET -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                return Objects.requireNonNullElseGet(tokenValid, () -> JobController.lookUpAll(request.token()));
+            }
+            case LOOKUP_JOB -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return Objects.requireNonNullElseGet(tokenValid, () -> JobController.lookUp(request.token(), data));
+            }
+            case UPDATE_JOB -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return Objects.requireNonNullElseGet(tokenValid, () -> JobController.update(request.token(), data));
+            }
+            case DELETE_JOB -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return Objects.requireNonNullElseGet(tokenValid, () -> JobController.delete(request.token(), data));
             }
 
             default -> {

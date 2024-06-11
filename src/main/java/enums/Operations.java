@@ -20,6 +20,10 @@ public enum Operations {
     UPDATE_SKILL,
     INCLUDE_JOB,
     INCLUDE_SKILLS,
+    LOOKUP_JOBSET,
+    LOOKUP_JOB,
+    DELETE_JOB,
+    UPDATE_JOB,
     DELETE_SKILLSET,
     FORCED_QUIT
 }

@@ -1,4 +1,4 @@
 package records.skill;
 
-public record CandidateUpdateSkillRequest(String skill, Integer experience, String newSkill) {
+public record CandidateUpdateSkillRequest(String skill, String experience, String newSkill) {
 }
