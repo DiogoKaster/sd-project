@@ -105,6 +105,65 @@ public class SkillController {
         }
     }
 
+    public static Response<?> updateSkillCandidate(String token, LinkedTreeMap<String, ?> data) {
+        try {
+            String currentSkillName = (String) data.get("skill");
+            String newSkillName = (String) data.get("newSkill");
+            Integer experience = ((Number) data.get("experience")).intValue();
+
+            // Obtém o candidato com suas habilidades
+            Candidate candidate = databaseConnection.selectWithSkills(auth.getAuthId(token), Candidate.class);
+            if (candidate == null) {
+                return new Response<>(Operations.UPDATE_SKILL, Statuses.USER_NOT_FOUND);
+            }
+
+            // Verifica se a habilidade atual existe no banco de dados
+            Skill currentSkill = databaseConnection.selectByName(currentSkillName, Skill.class);
+            if (currentSkill == null) {
+                return new Response<>(Operations.UPDATE_SKILL, Statuses.SKILL_NOT_EXIST);
+            }
+
+            // Verifica se o candidato possui essa habilidade atual
+            CandidateSkill existingCandidateSkill = candidate.getCandidateSkills().stream()
+                    .filter(cs -> cs.getSkill().getName().equals(currentSkillName))
+                    .findFirst()
+                    .orElse(null);
+
+            if (existingCandidateSkill == null) {
+                return new Response<>(Operations.UPDATE_SKILL, Statuses.SKILL_NOT_EXIST);
+            }
+
+            // Se newSkill for fornecida, verifica se o candidato já possui a nova habilidade
+            if (newSkillName != null) {
+                Skill newSkill = databaseConnection.selectByName(newSkillName, Skill.class);
+                if (newSkill == null) {
+                    return new Response<>(Operations.UPDATE_SKILL, Statuses.SKILL_NOT_EXIST);
+                }
+
+                boolean newSkillExists = candidate.getCandidateSkills().stream()
+                        .anyMatch(cs -> cs.getSkill().getName().equals(newSkillName));
+
+                if (newSkillExists) {
+                    return new Response<>(Operations.UPDATE_SKILL, Statuses.SKILL_EXISTS);
+                }
+
+                // Substitui a habilidade atual pela nova habilidade
+                existingCandidateSkill.setSkill(newSkill);
+            }
+
+            // Atualiza a experiência da habilidade
+            existingCandidateSkill.setYearsOfExperience(experience);
+            databaseConnection.update(existingCandidateSkill, CandidateSkill.class);
+
+            return new Response<>(Operations.UPDATE_SKILL, Statuses.SUCCESS);
+        } catch (Exception e) {
+            System.out.println("[LOG]: ERRO FEIO DE EXCEPTION NO UPDATESKILLCANDIDATE");
+            return new Response<>(Operations.UPDATE_SKILL, Statuses.ERROR);
+        }
+    }
+
+
+
     public static Response<?> deleteSkillCandidate(String token, LinkedTreeMap<String, ?> data) {
         try {
             String skillToFind = (String) data.get("skill");

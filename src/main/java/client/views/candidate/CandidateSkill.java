@@ -7,8 +7,10 @@ import enums.Statuses;
 import helpers.ClientConnection;
 import records.Request;
 import records.Response;
+import records.candidate.CandidateUpdateRequest;
 import records.skill.CandidateDeleteSkillRequest;
 import records.skill.CandidateLookupSkillRequest;
+import records.skill.CandidateUpdateSkillRequest;
 
 import javax.swing.*;
 import java.awt.*;
@@ -70,7 +72,42 @@ public class CandidateSkill extends JDialog {
     }
 
     private void onUpdate() {
-        dispose();
+        ClientConnection clientConnection = ClientConnection.getInstance();
+
+        String selectedSkill = (String) skillsDropdown.getSelectedItem();
+        int experience = (int) experienceSpinner.getValue();
+
+        CandidateUpdateSkillRequest requestModel = new CandidateUpdateSkillRequest(this.oldSkill, experience, selectedSkill);
+
+        Request<?> request = new Request<>(Operations.UPDATE_SKILL, this.token, requestModel);
+        clientConnection.send(request);
+
+        try {
+            Response<?> response = clientConnection.receive();
+
+            if (response == null){
+                JOptionPane.showMessageDialog(null, "Server is Down");
+                dispose();
+                StartConnection startConnection = new StartConnection();
+                startConnection.setVisible(true);
+            }
+
+            assert response != null;
+            if (response.status().equals(Statuses.SKILL_NOT_EXIST)){
+                JOptionPane.showMessageDialog(null, "Skill don't exist!");
+                return;
+            }
+
+            if (response.status().equals(Statuses.SKILL_EXISTS)) {
+                JOptionPane.showMessageDialog(null, "Skill already registered!");
+                return;
+            }
+
+            this.oldSkill = selectedSkill;
+            lookUpSkill();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void lookUpSkill() {
