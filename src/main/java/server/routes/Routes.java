@@ -6,6 +6,7 @@ import enums.Statuses;
 import records.*;
 import server.controllers.CandidateController;
 import server.controllers.RecruiterController;
+import server.controllers.SkillController;
 import server.middlewares.Auth;
 
 import java.util.Objects;
@@ -19,7 +20,6 @@ public class Routes {
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
                 Response<?> validationResponse = validateFields(operation, data, "email", "password");
                 return Objects.requireNonNullElseGet(validationResponse, () -> CandidateController.login(data));
-
             }
             case SIGNUP_CANDIDATE -> {
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
@@ -84,6 +84,20 @@ public class Routes {
                 Response<?> tokenValid = isTokenValid(operation, request.token());
                 return Objects.requireNonNullElseGet(tokenValid, () -> RecruiterController.delete(request.token()));
             }
+            case INCLUDE_SKILL -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                if (tokenValid != null) {
+                    return tokenValid;
+                }
+
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return SkillController.includeCandidate(request.token(), data);
+            }
+            case LOOKUP_SKILLSET -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.lookUpSkillSetCandidate(request.token()));
+            }
+
             default -> {
                 return new Response<>(operation, Statuses.INVALID_OPERATION);
             }

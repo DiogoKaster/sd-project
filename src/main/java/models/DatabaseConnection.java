@@ -145,4 +145,28 @@ public class DatabaseConnection {
             return null;
         }
     }
+
+    public <T> T selectByName(String name, Class<T> entityClass) {
+        try (Session session = factory.openSession()) {
+            return session.createQuery("FROM " + entityClass.getSimpleName() + " WHERE name = :name", entityClass)
+                    .setParameter("name", name)
+                    .uniqueResult();
+        } catch (Exception e) {
+            System.out.println("[LOG]: Erro na seleção do objeto pelo nome.");
+            return null;
+        }
+    }
+
+    public <T> T selectWithSkills(int id, Class<T> returnClass) {
+        try (Session session = factory.openSession()) {
+            String hql = "FROM Candidate c LEFT JOIN FETCH c.candidateSkills cs LEFT JOIN FETCH cs.skill WHERE c.id = :id";
+            return session.createQuery(hql, returnClass)
+                    .setParameter("id", id)
+                    .uniqueResult();
+        } catch (Exception e) {
+            System.out.println("[LOG]: Erro na seleção do objeto com habilidades.");
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
