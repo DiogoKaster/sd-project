@@ -97,6 +97,16 @@ public class Routes {
                 Response<?> tokenValid = isTokenValid(operation, request.token());
                 return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.lookUpSkillSetCandidate(request.token()));
             }
+            case LOOKUP_SKILL -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.lookUpSkillCandidate(request.token(), data));
+            }
+            case DELETE_SKILL -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.deleteSkillCandidate(request.token(), data));
+            }
 
             default -> {
                 return new Response<>(operation, Statuses.INVALID_OPERATION);

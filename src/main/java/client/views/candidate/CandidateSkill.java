@@ -7,35 +7,37 @@ import enums.Statuses;
 import helpers.ClientConnection;
 import records.Request;
 import records.Response;
-import records.skill.CandidateIncludeSkillRequest;
+import records.skill.CandidateDeleteSkillRequest;
+import records.skill.CandidateLookupSkillRequest;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.List;
 
-public class CandidateSkills extends JDialog {
+public class CandidateSkill extends JDialog {
     private JPanel contentPane;
-    private JButton buttonGoBack;
+    private JButton buttonUpdate;
+    private JButton buttonCancel;
+    private JButton buttonDelete;
     private JComboBox<String> skillsDropdown;
-    private JButton buttonInsertSkill;
     private JSpinner experienceSpinner;
-    private JPanel skillsPanel;
 
     private String token;
 
-    public CandidateSkills(String token) {
+    private String oldSkill;
+
+    public CandidateSkill(String token, String oldSkill) {
         this();
         this.token = token;
-        lookUpSkillSet();
+        this.oldSkill = oldSkill;
+        lookUpSkill();
     }
-
-    public CandidateSkills() {
+    public CandidateSkill() {
         setContentPane(contentPane);
         setMinimumSize(new Dimension(500, 500));
         setModal(true);
-        getRootPane().setDefaultButton(buttonInsertSkill);
+        getRootPane().setDefaultButton(buttonUpdate);
 
         skillsDropdown.addItem("NodeJs");
         skillsDropdown.addItem("JavaScript");
@@ -51,9 +53,11 @@ public class CandidateSkills extends JDialog {
         SpinnerNumberModel model = new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1);
         experienceSpinner.setModel(model);
 
-        buttonGoBack.addActionListener(e -> onCancel());
+        buttonUpdate.addActionListener(e -> onUpdate());
 
-        buttonInsertSkill.addActionListener(e -> onOK());
+        buttonDelete.addActionListener(e -> onDelete());
+
+        buttonCancel.addActionListener(e -> onCancel());
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -65,21 +69,22 @@ public class CandidateSkills extends JDialog {
         contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
-    private void onOK() {
+    private void onUpdate() {
+        dispose();
+    }
+
+    private void lookUpSkill() {
         ClientConnection clientConnection = ClientConnection.getInstance();
 
-        String selectedSkill = (String) skillsDropdown.getSelectedItem();
-        int experience = (int) experienceSpinner.getValue();
-
-        CandidateIncludeSkillRequest includeSkillModel = new CandidateIncludeSkillRequest(selectedSkill, experience);
-        Request<CandidateIncludeSkillRequest> request = new Request<>(Operations.INCLUDE_SKILL, this.token, includeSkillModel);
+        CandidateLookupSkillRequest requestModel = new CandidateLookupSkillRequest(this.oldSkill);
+        Request<?> request = new Request<>(Operations.LOOKUP_SKILL, this.token, requestModel);
 
         clientConnection.send(request);
 
         try {
             Response<?> response = clientConnection.receive();
 
-            if (response == null) {
+            if (response == null){
                 JOptionPane.showMessageDialog(null, "Server is Down");
                 dispose();
                 StartConnection startConnection = new StartConnection();
@@ -87,31 +92,34 @@ public class CandidateSkills extends JDialog {
             }
 
             assert response != null;
-            if(response.status() == Statuses.SKILL_EXISTS) {
-                JOptionPane.showMessageDialog(this, "Skill já cadastrada.", "Already Exists", JOptionPane.ERROR_MESSAGE);
+            if (response.status().equals(Statuses.SKILL_NOT_EXIST)){
+                JOptionPane.showMessageDialog(null, "User not found");
+                dispose();
+                CandidateSkills candidateSkills = new CandidateSkills(this.token);
+                candidateSkills.setVisible(true);
             }
-            if (response.status() == Statuses.SKILL_NOT_EXIST) {
-                JOptionPane.showMessageDialog(this, "Skill não existe.", "Not Found", JOptionPane.ERROR_MESSAGE);
-            }
+
+            LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) response.data();
+
+            System.out.println(data.get("skill"));
+            System.out.println(data.get("experience"));
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } finally {
-            skillsPanel.removeAll();
-            lookUpSkillSet();
         }
     }
 
-    private void lookUpSkillSet() {
+    private void onDelete() {
         ClientConnection clientConnection = ClientConnection.getInstance();
 
-        Request<?> request = new Request<>(Operations.LOOKUP_SKILLSET, this.token);
+        CandidateDeleteSkillRequest requestModel = new CandidateDeleteSkillRequest(this.oldSkill);
+        Request<?> request = new Request<>(Operations.DELETE_SKILL, this.token, requestModel);
 
         clientConnection.send(request);
 
         try {
             Response<?> response = clientConnection.receive();
 
-            if (response == null) {
+            if (response == null){
                 JOptionPane.showMessageDialog(null, "Server is Down");
                 dispose();
                 StartConnection startConnection = new StartConnection();
@@ -119,26 +127,14 @@ public class CandidateSkills extends JDialog {
             }
 
             assert response != null;
-            LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) response.data();
-
-            List<?> skillInfoList = (List<?>) data.get("skillset");
-            for (Object skillInfo : skillInfoList) {
-                LinkedTreeMap<String, String> skillInfoMap = (LinkedTreeMap<String, String>) skillInfo;
-                String skill = skillInfoMap.get("skill");
-                String experience = skillInfoMap.get("experience");
-
-                JButton skillButton = new JButton(skill);
-                skillButton.addActionListener(e -> {
-                    dispose();
-                    CandidateSkill candidateSkill = new CandidateSkill(this.token, skill);
-                    candidateSkill.setVisible(true);
-                });
-                skillsPanel.add(skillButton);
+            if (!(response.status().equals(Statuses.SUCCESS))) {
+                JOptionPane.showMessageDialog(null, "Cannot Delete!");
+                return;
             }
 
-            skillsPanel.revalidate();
-            skillsPanel.repaint();
-
+            dispose();
+            CandidateSkills candidateSkills = new CandidateSkills(this.token);
+            candidateSkills.setVisible(true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -146,12 +142,12 @@ public class CandidateSkills extends JDialog {
 
     private void onCancel() {
         dispose();
-        CandidateHome candidateHome = new CandidateHome(this.token);
-        candidateHome.setVisible(true);
+        CandidateSkills candidateSkills = new CandidateSkills(this.token);
+        candidateSkills.setVisible(true);
     }
 
     public static void main(String[] args) {
-        CandidateSkills dialog = new CandidateSkills();
+        CandidateSkill dialog = new CandidateSkill();
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);

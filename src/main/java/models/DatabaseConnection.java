@@ -165,7 +165,6 @@ public class DatabaseConnection {
                     .uniqueResult();
         } catch (Exception e) {
             System.out.println("[LOG]: Erro na seleção do objeto com habilidades.");
-            e.printStackTrace();
             return null;
         }
     }
