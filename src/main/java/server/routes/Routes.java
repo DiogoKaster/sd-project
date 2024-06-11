@@ -102,6 +102,11 @@ public class Routes {
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
                 return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.lookUpSkillCandidate(request.token(), data));
             }
+            case UPDATE_SKILL -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return Objects.requireNonNullElseGet(tokenValid, () -> SkillController.updateSkillCandidate(request.token(), data));
+            }
             case DELETE_SKILL -> {
                 Response<?> tokenValid = isTokenValid(operation, request.token());
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();

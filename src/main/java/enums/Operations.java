@@ -17,6 +17,7 @@ public enum Operations {
     LOOKUP_SKILL,
     LOOKUP_SKILLSET,
     DELETE_SKILL,
+    UPDATE_SKILL,
     INCLUDE_JOB,
     INCLUDE_SKILLS,
     DELETE_SKILLSET,
