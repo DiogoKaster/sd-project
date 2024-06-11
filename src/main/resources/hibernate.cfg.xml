@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <hibernate-configuration>
     <session-factory>
-        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/sdDatabase?createDatabaseIfNotExist=true</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/sdProject?createDatabaseIfNotExist=true</property>
         <property name="hibernate.connection.username">root</property>
         <property name="hibernate.connection.password"></property>
         
@@ -11,5 +11,8 @@
         <property name="hibernate.hbm2ddl.auto">update</property>
         <mapping class="models.Candidate" />
         <mapping class="models.Recruiter" />
+        <mapping class="models.Skill" />
+        <mapping class="models.CandidateSkill" />
+        <mapping class="models.Job" />
     </session-factory>
 </hibernate-configuration>
