@@ -133,6 +133,11 @@ public class Routes {
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
                 return Objects.requireNonNullElseGet(tokenValid, () -> JobController.delete(request.token(), data));
             }
+            case SEARCH_JOB -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return Objects.requireNonNullElseGet(tokenValid, () -> JobController.search(data));
+            }
 
             default -> {
                 return new Response<>(operation, Statuses.INVALID_OPERATION);

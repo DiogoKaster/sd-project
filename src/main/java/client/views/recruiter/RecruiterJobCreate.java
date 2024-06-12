@@ -6,7 +6,7 @@ import enums.Statuses;
 import helpers.ClientConnection;
 import records.Request;
 import records.Response;
-import records.skill.RecruiterIncludeJobRequest;
+import records.job.RecruiterIncludeJobRequest;
 
 import javax.swing.*;
 import java.awt.*;

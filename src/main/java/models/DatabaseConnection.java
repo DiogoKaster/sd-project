@@ -7,6 +7,8 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
+import java.util.List;
+
 public class DatabaseConnection {
     private final SessionFactory factory;
 
@@ -177,6 +179,16 @@ public class DatabaseConnection {
                     .uniqueResult();
         } catch (Exception e) {
             System.out.println("[LOG]: Erro na seleção do objeto com habilidades.");
+            return null;
+        }
+    }
+
+    public List<Job> selectAllJobs() {
+        try (Session session = factory.openSession()) {
+            String hql = "FROM Job";
+            return session.createQuery(hql, Job.class).list();
+        } catch (Exception e) {
+            System.out.println("[LOG]: Erro na seleção de todos os trabalhos.");
             return null;
         }
     }

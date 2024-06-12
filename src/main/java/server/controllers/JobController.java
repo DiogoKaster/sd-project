@@ -5,13 +5,12 @@ import enums.Operations;
 import enums.Statuses;
 import models.*;
 import records.Response;
-import records.skill.CandidateLookupSkillSetResponse;
-import records.skill.RecruiterLookupJobSetResponse;
+import records.job.RecruiterLookupJobSetResponse;
 import records.skill.SkillInfo;
 import server.middlewares.Auth;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class JobController {
     private static final DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
@@ -53,9 +52,15 @@ public class JobController {
                 return new Response<>(Operations.LOOKUP_JOBSET, Statuses.USER_NOT_FOUND);
             }
 
-            List<SkillInfo> jobInfoList = recruiter.getJobs().stream()
-                    .map(rj -> new SkillInfo(rj.getSkill().getName(), rj.getYearsOfExperience().toString(), rj.getId().toString()))
-                    .collect(Collectors.toList());
+            List<SkillInfo> jobInfoList = new ArrayList<>();
+            for (Job rj : recruiter.getJobs()) {
+                SkillInfo jobInfo = new SkillInfo(
+                        rj.getSkill().getName(),
+                        rj.getYearsOfExperience().toString(),
+                        rj.getId().toString()
+                );
+                jobInfoList.add(jobInfo);
+            }
 
             String jobsetSize = String.valueOf(jobInfoList.size());
             RecruiterLookupJobSetResponse responseModel = new RecruiterLookupJobSetResponse(jobsetSize, jobInfoList);
@@ -76,8 +81,13 @@ public class JobController {
                 return new Response<>(Operations.LOOKUP_JOB, Statuses.USER_NOT_FOUND);
             }
 
-            Job jobInfo = recruiter.getJobs().stream()
-                    .filter(rj -> rj.getId().equals(jobId)).findFirst().orElse(null);
+            Job jobInfo = null;
+            for (Job rj : recruiter.getJobs()) {
+                if (rj.getId().equals(jobId)) {
+                    jobInfo = rj;
+                    break;
+                }
+            }
 
             if (jobInfo == null) {
                 return new Response<>(Operations.LOOKUP_JOB, Statuses.SKILL_NOT_EXIST);
@@ -107,10 +117,13 @@ public class JobController {
                 return new Response<>(Operations.UPDATE_JOB, Statuses.USER_NOT_FOUND);
             }
 
-            Job job = recruiter.getJobs().stream()
-                    .filter(rj -> rj.getId().equals(jobId))
-                    .findFirst()
-                    .orElse(null);
+            Job job = null;
+            for (Job rj : recruiter.getJobs()) {
+                if (rj.getId().equals(jobId)) {
+                    job = rj;
+                    break;
+                }
+            }
 
             if (job == null) {
                 return new Response<>(Operations.UPDATE_JOB, Statuses.JOB_NOT_FOUND);
@@ -138,8 +151,13 @@ public class JobController {
                 return new Response<>(Operations.DELETE_JOB, Statuses.USER_NOT_FOUND);
             }
 
-            Job jobToDelete = recruiter.getJobs().stream()
-                    .filter(rj -> rj.getId().equals(jobId)).findFirst().orElse(null);
+            Job jobToDelete = null;
+            for (Job rj : recruiter.getJobs()) {
+                if (rj.getId().equals(jobId)) {
+                    jobToDelete = rj;
+                    break;
+                }
+            }
 
             if (jobToDelete == null) {
                 return new Response<>(Operations.DELETE_JOB, Statuses.JOB_NOT_FOUND);
@@ -151,6 +169,60 @@ public class JobController {
         } catch (Exception e) {
             System.out.println("[LOG]: ERRO FEIO DE EXCEPTION NO DELETEJOB");
             return new Response<>(Operations.DELETE_JOB, Statuses.ERROR);
+        }
+    }
+
+    public static Response<?> search(LinkedTreeMap<String, ?> data) {
+        try {
+            String filterType = (String) data.get("filter");
+            List<String> skillsFilter = (List<String>) data.get("skill");
+            Integer experience = data.get("experience") != null ? Integer.parseInt((String) data.get("experience")) : null;
+
+            List<Job> allJobs = databaseConnection.selectAllJobs();
+
+            List<SkillInfo> jobInfoList = new ArrayList<>();
+
+            if(filterType.equals("OU")) {
+                boolean matches;
+                for (Job job : allJobs) {
+                    matches = skillsFilter.contains(job.getSkill().getName()) ||
+                            (experience != null && job.getYearsOfExperience() <= experience);
+
+                    if (matches) {
+                        SkillInfo jobInfo = new SkillInfo(
+                                job.getSkill().getName(),
+                                job.getYearsOfExperience().toString(),
+                                job.getId().toString()
+                        );
+                        jobInfoList.add(jobInfo);
+                    }
+                }
+            }
+
+            if(filterType.equals("E")) {
+                boolean matches;
+                for (Job job : allJobs) {
+                    matches = skillsFilter.contains(job.getSkill().getName()) &&
+                            (experience != null && job.getYearsOfExperience() <= experience);
+
+                    if (matches) {
+                        SkillInfo jobInfo = new SkillInfo(
+                                job.getSkill().getName(),
+                                job.getYearsOfExperience().toString(),
+                                job.getId().toString()
+                        );
+                        jobInfoList.add(jobInfo);
+                    }
+                }
+            }
+
+            String jobsetSize = String.valueOf(jobInfoList.size());
+            RecruiterLookupJobSetResponse responseModel = new RecruiterLookupJobSetResponse(jobsetSize, jobInfoList);
+
+            return new Response<>(Operations.LOOKUP_JOBSET, Statuses.SUCCESS, responseModel);
+        } catch (Exception e) {
+            System.out.println("[LOG]: ERRO FEIO DE EXCEPTION NO LOOKUPJOBSET");
+            return new Response<>(Operations.LOOKUP_JOBSET, Statuses.ERROR);
         }
     }
 }
