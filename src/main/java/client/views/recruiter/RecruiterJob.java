@@ -8,7 +8,9 @@ import enums.Statuses;
 import helpers.ClientConnection;
 import records.Request;
 import records.Response;
-import records.skill.*;
+import records.job.RecruiterDeleteJobRequest;
+import records.job.RecruiterLookupJobRequest;
+import records.job.RecruiterUpdateJobRequest;
 
 import javax.swing.*;
 import java.awt.*;

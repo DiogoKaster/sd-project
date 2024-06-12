@@ -12,6 +12,7 @@ import records.skill.CandidateLookupSkillSetResponse;
 import records.skill.SkillInfo;
 import server.middlewares.Auth;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,9 +63,15 @@ public class SkillController {
                 return new Response<>(Operations.LOOKUP_SKILLSET, Statuses.USER_NOT_FOUND);
             }
 
-            List<SkillInfo> skillInfoList = candidate.getCandidateSkills().stream()
-                    .map(cs -> new SkillInfo(cs.getSkill().getName(), cs.getYearsOfExperience().toString(), cs.getId().toString()))
-                    .collect(Collectors.toList());
+            List<SkillInfo> skillInfoList = new ArrayList<>();
+            for (CandidateSkill cs : candidate.getCandidateSkills()) {
+                SkillInfo skillInfo = new SkillInfo(
+                        cs.getSkill().getName(),
+                        cs.getYearsOfExperience().toString(),
+                        cs.getId().toString()
+                );
+                skillInfoList.add(skillInfo);
+            }
 
             String skillsetSize = String.valueOf(skillInfoList.size());
             CandidateLookupSkillSetResponse responseModel = new CandidateLookupSkillSetResponse(skillsetSize, skillInfoList);
@@ -85,8 +92,13 @@ public class SkillController {
                 return new Response<>(Operations.LOOKUP_SKILL, Statuses.USER_NOT_FOUND);
             }
 
-            CandidateSkill skillInfo = candidate.getCandidateSkills().stream()
-                    .filter(cs -> cs.getSkill().getName().equals(skillToFind)).findFirst().orElse(null);
+            CandidateSkill skillInfo = null;
+            for (CandidateSkill cs : candidate.getCandidateSkills()) {
+                if (cs.getSkill().getName().equals(skillToFind)) {
+                    skillInfo = cs;
+                    break;
+                }
+            }
 
             if (skillInfo == null) {
                 return new Response<>(Operations.LOOKUP_SKILL, Statuses.SKILL_NOT_EXIST);
@@ -123,10 +135,13 @@ public class SkillController {
             }
 
             // Verifica se o candidato possui essa habilidade atual
-            CandidateSkill existingCandidateSkill = candidate.getCandidateSkills().stream()
-                    .filter(cs -> cs.getSkill().getName().equals(currentSkillName))
-                    .findFirst()
-                    .orElse(null);
+            CandidateSkill existingCandidateSkill = null;
+            for (CandidateSkill cs : candidate.getCandidateSkills()) {
+                if (cs.getSkill().getName().equals(currentSkillName)) {
+                    existingCandidateSkill = cs;
+                    break;
+                }
+            }
 
             if (existingCandidateSkill == null) {
                 return new Response<>(Operations.UPDATE_SKILL, Statuses.SKILL_NOT_EXIST);
@@ -139,11 +154,10 @@ public class SkillController {
                     return new Response<>(Operations.UPDATE_SKILL, Statuses.SKILL_NOT_EXIST);
                 }
 
-                boolean newSkillExists = candidate.getCandidateSkills().stream()
-                        .anyMatch(cs -> cs.getSkill().getName().equals(newSkillName));
-
-                if (newSkillExists) {
-                    return new Response<>(Operations.UPDATE_SKILL, Statuses.SKILL_EXISTS);
+                for (CandidateSkill cs : candidate.getCandidateSkills()) {
+                    if (cs.getSkill().getName().equals(newSkillName)) {
+                        return new Response<>(Operations.UPDATE_SKILL, Statuses.SKILL_EXISTS);
+                    }
                 }
 
                 existingCandidateSkill.setSkill(newSkill);
@@ -171,8 +185,13 @@ public class SkillController {
                 return new Response<>(Operations.DELETE_SKILL, Statuses.USER_NOT_FOUND);
             }
 
-            CandidateSkill skillToDelete = candidate.getCandidateSkills().stream()
-                    .filter(cs -> cs.getSkill().getName().equals(skillToFind)).findFirst().orElse(null);
+            CandidateSkill skillToDelete = null;
+            for (CandidateSkill cs : candidate.getCandidateSkills()) {
+                if (cs.getSkill().getName().equals(skillToFind)) {
+                    skillToDelete = cs;
+                    break;
+                }
+            }
 
             if (skillToDelete == null) {
                 return new Response<>(Operations.DELETE_SKILL, Statuses.SKILL_NOT_EXIST);

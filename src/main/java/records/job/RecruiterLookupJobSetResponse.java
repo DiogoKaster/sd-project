@@ -1,4 +1,6 @@
-package records.skill;
+package records.job;
+
+import records.skill.SkillInfo;
 
 import java.util.List;
 

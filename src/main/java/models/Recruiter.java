@@ -33,6 +33,6 @@ public class Recruiter {
     @Column(name = "description", nullable = false)
     private String description;
 
-    @OneToMany(mappedBy = "recruiter")
+    @OneToMany(mappedBy = "recruiter", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Job> jobs = new HashSet<>();
 }

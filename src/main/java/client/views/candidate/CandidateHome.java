@@ -4,7 +4,6 @@ import client.views.StartConnection;
 import enums.Operations;
 import enums.Statuses;
 import helpers.ClientConnection;
-import models.CandidateSkill;
 import records.Request;
 import records.Response;
 
@@ -22,6 +21,7 @@ public class CandidateHome extends JDialog {
     private JLabel userName;
     private JButton buttonDelete;
     private JButton buttonSkills;
+    private JButton buttonJobs;
 
     public CandidateHome(String token) {
         this();
@@ -40,6 +40,8 @@ public class CandidateHome extends JDialog {
         buttonDelete.addActionListener(e -> onDelete());
 
         buttonSkills.addActionListener(e -> onGoToSkills());
+
+        buttonJobs.addActionListener(e -> onGoToJobs());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -119,6 +121,12 @@ public class CandidateHome extends JDialog {
         dispose();
         CandidateSkills candidateSkills = new CandidateSkills(this.token);
         candidateSkills.setVisible(true);
+    }
+
+    private void onGoToJobs() {
+        dispose();
+        CandidateJobs candidateJobs = new CandidateJobs(this.token);
+        candidateJobs.setVisible(true);
     }
 
     public static void main(String[] args) {
