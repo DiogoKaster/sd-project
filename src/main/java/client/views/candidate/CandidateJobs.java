@@ -79,6 +79,11 @@ public class CandidateJobs extends JDialog {
         });
 
         contentPane.registerKeyboardAction(e -> onGoBack(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        skillsDropdown.addActionListener(e -> updateFilterCheckboxes());
+        experienceSpinner.addChangeListener(e -> updateFilterCheckboxes());
+
+        updateFilterCheckboxes();
     }
 
     private void onSearch() {
@@ -87,7 +92,7 @@ public class CandidateJobs extends JDialog {
         String experience = experienceSpinner.getValue().toString();
         String filterType = getSelectedFilterType();
 
-        if(Integer.parseInt(experience) == 0) {
+        if (Integer.parseInt(experience) == 0) {
             experience = null;
         }
 
@@ -126,8 +131,11 @@ public class CandidateJobs extends JDialog {
 
     private void addSkillToFilter() {
         String selectedSkill = (String) skillsDropdown.getSelectedItem();
-        System.out.println("Skill adicionada!");
-        this.skillsFilter.add(selectedSkill);
+        if (!skillsFilter.contains(selectedSkill)) {
+            skillsFilter.add(selectedSkill);
+            System.out.println("Skill adicionada: " + selectedSkill);
+        }
+        updateFilterCheckboxes();
     }
 
     private void onGoBack() {
@@ -137,12 +145,21 @@ public class CandidateJobs extends JDialog {
     }
 
     private String getSelectedFilterType() {
-        for (AbstractButton button : Collections.list(buttonFilterType.getElements())) {
-            if (button.isSelected()) {
-                return button.getText();
+        if (!skillsFilter.isEmpty() && (Integer) experienceSpinner.getValue() > 0) {
+            for (AbstractButton button : Collections.list(buttonFilterType.getElements())) {
+                if (button.isSelected()) {
+                    return button.getText();
+                }
             }
         }
         return null;
+    }
+
+    private void updateFilterCheckboxes() {
+        boolean enableFilters = !skillsFilter.isEmpty() && (Integer) experienceSpinner.getValue() > 0;
+        radioFilterAnd.setEnabled(enableFilters);
+        radioFilterAnd.setSelected(enableFilters);
+        radioFilterOr.setEnabled(enableFilters);
     }
 
     public static void main(String[] args) {
