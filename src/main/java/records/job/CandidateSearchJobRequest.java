@@ -7,7 +7,7 @@ public record CandidateSearchJobRequest(List<String> skill, String experience, S
         this(null, experience, null);
     }
 
-    public CandidateSearchJobRequest(List<String> skill, String filter) {
-        this(skill, null, filter);
+    public CandidateSearchJobRequest(List<String> skill) {
+        this(skill, null, null);
     }
 }

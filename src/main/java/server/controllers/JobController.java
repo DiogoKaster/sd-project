@@ -10,6 +10,7 @@ import records.skill.SkillInfo;
 import server.middlewares.Auth;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class JobController {
@@ -174,45 +175,38 @@ public class JobController {
 
     public static Response<?> search(LinkedTreeMap<String, ?> data) {
         try {
-            String filterType = (String) data.get("filter");
-            List<String> skillsFilter = (List<String>) data.get("skill");
+            String filterType = data.get("filter") != null ? (String) data.get("filter") : null;
+            List<String> skillsFilter = (data.get("skill") != null) ? (List<String>) data.get("skill") : Collections.emptyList();
             Integer experience = data.get("experience") != null ? Integer.parseInt((String) data.get("experience")) : null;
 
             List<Job> allJobs = databaseConnection.selectAllJobs();
-
             List<SkillInfo> jobInfoList = new ArrayList<>();
 
-            if(filterType.equals("OU")) {
-                boolean matches;
-                for (Job job : allJobs) {
-                    matches = skillsFilter.contains(job.getSkill().getName()) ||
-                            (experience != null && job.getYearsOfExperience() <= experience);
+            for (Job job : allJobs) {
+                boolean matches = false;
 
-                    if (matches) {
-                        SkillInfo jobInfo = new SkillInfo(
-                                job.getSkill().getName(),
-                                job.getYearsOfExperience().toString(),
-                                job.getId().toString()
-                        );
-                        jobInfoList.add(jobInfo);
+                if (filterType != null && !skillsFilter.isEmpty() && experience != null) {
+                    boolean matchesSkills = skillsFilter.contains(job.getSkill().getName());
+                    boolean matchesExperience = job.getYearsOfExperience() <= experience;
+
+                    if (filterType.equals("OR")) {
+                        matches = matchesSkills || matchesExperience;
+                    } else if (filterType.equals("AND")) {
+                        matches = matchesSkills && matchesExperience;
                     }
+                } else if (!skillsFilter.isEmpty()) {
+                    matches = skillsFilter.contains(job.getSkill().getName());
+                } else if (experience != null) {
+                    matches = job.getYearsOfExperience() <= experience;
                 }
-            }
 
-            if(filterType.equals("E")) {
-                boolean matches;
-                for (Job job : allJobs) {
-                    matches = skillsFilter.contains(job.getSkill().getName()) &&
-                            (experience != null && job.getYearsOfExperience() <= experience);
-
-                    if (matches) {
-                        SkillInfo jobInfo = new SkillInfo(
-                                job.getSkill().getName(),
-                                job.getYearsOfExperience().toString(),
-                                job.getId().toString()
-                        );
-                        jobInfoList.add(jobInfo);
-                    }
+                if (matches) {
+                    SkillInfo jobInfo = new SkillInfo(
+                            job.getSkill().getName(),
+                            job.getYearsOfExperience().toString(),
+                            job.getId().toString()
+                    );
+                    jobInfoList.add(jobInfo);
                 }
             }
 
