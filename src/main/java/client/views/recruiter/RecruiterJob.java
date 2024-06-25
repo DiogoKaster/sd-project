@@ -8,14 +8,14 @@ import enums.Statuses;
 import helpers.ClientConnection;
 import records.Request;
 import records.Response;
-import records.job.RecruiterDeleteJobRequest;
-import records.job.RecruiterLookupJobRequest;
-import records.job.RecruiterUpdateJobRequest;
+import records.job.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Objects;
 
 public class RecruiterJob extends JDialog {
     private JPanel contentPane;
@@ -24,6 +24,16 @@ public class RecruiterJob extends JDialog {
     private JComboBox<String> skillsDropdown;
     private JSpinner experienceSpinner;
     private JButton buttonDelete;
+    private JRadioButton availableYes;
+    private JRadioButton availableNo;
+    private JRadioButton searchableYes;
+    private JRadioButton searchableNo;
+    private JButton buttonSetAvailable;
+    private JButton buttonSetSearchable;
+
+    private final ButtonGroup availableButtonGroup;
+
+    private final ButtonGroup searchableButtonGroup;
 
     private String token;
     private String id;
@@ -47,6 +57,10 @@ public class RecruiterJob extends JDialog {
 
         buttonDelete.addActionListener(e -> onDelete());
 
+        buttonSetAvailable.addActionListener(e -> setAvailable());
+
+        buttonSetSearchable.addActionListener(e -> setSearchable());
+
         skillsDropdown.addItem("NodeJs");
         skillsDropdown.addItem("JavaScript");
         skillsDropdown.addItem("Java");
@@ -57,6 +71,16 @@ public class RecruiterJob extends JDialog {
         skillsDropdown.addItem("ReactNative");
         skillsDropdown.addItem("TypeScript");
         skillsDropdown.addItem("Ruby");
+
+        availableButtonGroup = new ButtonGroup();
+        availableButtonGroup.add(availableYes);
+        availableButtonGroup.add(availableNo);
+        availableYes.setSelected(true);
+
+        searchableButtonGroup = new ButtonGroup();
+        searchableButtonGroup.add(searchableYes);
+        searchableButtonGroup.add(searchableNo);
+        searchableYes.setSelected(true);
 
         SpinnerNumberModel model = new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1);
         experienceSpinner.setModel(model);
@@ -120,8 +144,8 @@ public class RecruiterJob extends JDialog {
             if (response.status().equals(Statuses.JOB_NOT_FOUND)){
                 JOptionPane.showMessageDialog(null, "Job not found");
                 dispose();
-                CandidateSkills candidateSkills = new CandidateSkills(this.token);
-                candidateSkills.setVisible(true);
+                RecruiterJobs recruiterJobs = new RecruiterJobs(this.token);
+                recruiterJobs.setVisible(true);
             }
 
             LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) response.data();
@@ -129,6 +153,70 @@ public class RecruiterJob extends JDialog {
 //            System.out.println(data.get("id").toString());
 //            System.out.println(data.get("skill"));
 //            System.out.println(data.get("experience"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setAvailable() {
+        ClientConnection clientConnection = ClientConnection.getInstance();
+
+        String available = Objects.requireNonNull(getSelectedAvailable()).toUpperCase();
+
+        RecruiterSetAvailableRequest requestModel = new RecruiterSetAvailableRequest(this.id, available);
+        Request<?> request = new Request<>(Operations.SET_JOB_AVAILABLE, this.token, requestModel);
+
+        clientConnection.send(request);
+
+        try {
+            Response<?> response = clientConnection.receive();
+
+            if (response == null){
+                JOptionPane.showMessageDialog(null, "Server is Down");
+                dispose();
+                StartConnection startConnection = new StartConnection();
+                startConnection.setVisible(true);
+            }
+
+            assert response != null;
+            if (response.status().equals(Statuses.JOB_NOT_FOUND)){
+                JOptionPane.showMessageDialog(null, "Job not found");
+                dispose();
+                RecruiterJobs recruiterJobs = new RecruiterJobs(this.token);
+                recruiterJobs.setVisible(true);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setSearchable() {
+        ClientConnection clientConnection = ClientConnection.getInstance();
+
+        String searchable = Objects.requireNonNull(getSelectedSearchable()).toUpperCase();
+
+        RecruiterSetSearchableRequest requestModel = new RecruiterSetSearchableRequest(this.id, searchable);
+        Request<?> request = new Request<>(Operations.SET_JOB_SEARCHABLE, this.token, requestModel);
+
+        clientConnection.send(request);
+
+        try {
+            Response<?> response = clientConnection.receive();
+
+            if (response == null){
+                JOptionPane.showMessageDialog(null, "Server is Down");
+                dispose();
+                StartConnection startConnection = new StartConnection();
+                startConnection.setVisible(true);
+            }
+
+            assert response != null;
+            if (response.status().equals(Statuses.JOB_NOT_FOUND)){
+                JOptionPane.showMessageDialog(null, "Job not found");
+                dispose();
+                RecruiterJobs recruiterJobs = new RecruiterJobs(this.token);
+                recruiterJobs.setVisible(true);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -153,9 +241,11 @@ public class RecruiterJob extends JDialog {
             }
 
             assert response != null;
-            if (!(response.status().equals(Statuses.SUCCESS))) {
-                JOptionPane.showMessageDialog(null, "Cannot Delete!");
-                return;
+            if (response.status().equals(Statuses.JOB_NOT_FOUND)){
+                JOptionPane.showMessageDialog(null, "Job not found");
+                dispose();
+                RecruiterJobs recruiterJobs = new RecruiterJobs(this.token);
+                recruiterJobs.setVisible(true);
             }
 
             dispose();
@@ -164,6 +254,26 @@ public class RecruiterJob extends JDialog {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String getSelectedAvailable() {
+        for (AbstractButton button : Collections.list(availableButtonGroup.getElements())) {
+            if (button.isSelected()) {
+                return button.getText();
+            }
+        }
+
+        return null;
+    }
+
+    private String getSelectedSearchable() {
+        for (AbstractButton button : Collections.list(searchableButtonGroup.getElements())) {
+            if (button.isSelected()) {
+                return button.getText();
+            }
+        }
+
+        return null;
     }
 
     private void onGoBack() {

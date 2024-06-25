@@ -5,11 +5,21 @@ import enums.Operations;
 import enums.Roles;
 import enums.Statuses;
 import models.Candidate;
+import models.CandidateSkill;
 import models.DatabaseConnection;
+import models.Job;
 import records.Response;
+import records.candidate.CandidateInfo;
 import records.candidate.CandidateLoginResponse;
 import records.candidate.CandidateLookupResponse;
+import records.candidate.CandidateSearchResponse;
+import records.job.RecruiterLookupJobSetResponse;
+import records.skill.SkillInfo;
 import server.middlewares.Auth;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class CandidateController {
     private static final DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
@@ -90,5 +100,59 @@ public class CandidateController {
         candidate.setPassword(password);
 
         return candidate;
+    }
+
+    public static Response<?> search(LinkedTreeMap<String, ?> data) {
+        try {
+            String filterType = data.get("filter") != null ? (String) data.get("filter") : null;
+            List<String> skillsFilter = (data.get("skill") != null) ? (List<String>) data.get("skill") : Collections.emptyList();
+            Integer experience = data.get("experience") != null ? Integer.parseInt((String) data.get("experience")) : null;
+
+            List<Candidate> allCandidates = databaseConnection.selectWithSkills();
+            List<CandidateInfo> candidateInfoList = new ArrayList<>();
+
+            for (Candidate candidate : allCandidates) {
+                System.out.println(candidate.getName());
+                for (CandidateSkill candidateSkill : candidate.getCandidateSkills()) {
+                    System.out.println(candidateSkill.getSkill());
+                    boolean matches = false;
+
+                    if (filterType != null && !skillsFilter.isEmpty() && experience != null) {
+
+                        boolean matchesSkills = skillsFilter.contains(candidateSkill.getSkill().getName());
+                        boolean matchesExperience = candidateSkill.getYearsOfExperience() <= experience;
+
+                        if (filterType.equals("OR")) {
+                            matches = matchesSkills || matchesExperience;
+                        } else if (filterType.equals("AND")) {
+                            matches = matchesSkills && matchesExperience;
+                        }
+
+                    } else if (!skillsFilter.isEmpty()) {
+                        matches = skillsFilter.contains(candidateSkill.getSkill().getName());
+                    } else if (experience != null) {
+                        matches = candidateSkill.getYearsOfExperience() <= experience;
+                    }
+
+                    if (matches) {
+                        CandidateInfo candidateInfo = new CandidateInfo(
+                                candidateSkill.getSkill().getName(),
+                                candidateSkill.getYearsOfExperience().toString(),
+                                candidateSkill.getId().toString(),
+                                candidate.getId().toString()
+                        );
+                        candidateInfoList.add(candidateInfo);
+                    }
+                }
+            }
+
+            String candidateInfoSize = String.valueOf(candidateInfoList.size());
+            CandidateSearchResponse responseModel = new CandidateSearchResponse(candidateInfoSize, candidateInfoList);
+
+            return new Response<>(Operations.SEARCH_CANDIDATE, Statuses.SUCCESS, responseModel);
+        } catch (Exception e) {
+            System.out.println("[LOG]: ERRO FEIO DE EXCEPTION NO SEARCH_CANDIDATE");
+            return new Response<>(Operations.SEARCH_CANDIDATE, Statuses.ERROR);
+        }
     }
 }

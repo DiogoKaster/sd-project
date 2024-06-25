@@ -24,4 +24,10 @@ public class Job {
 
     @Column(name = "years_of_experience", nullable = false)
     private Integer yearsOfExperience;
+
+    @Column(name = "searchable", nullable = false)
+    private String searchable;
+
+    @Column(name="available", nullable = false)
+    private String available;
 }

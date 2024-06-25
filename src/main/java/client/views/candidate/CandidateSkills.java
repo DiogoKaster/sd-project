@@ -136,10 +136,8 @@ public class CandidateSkills extends JDialog {
                 });
                 skillsPanel.add(skillButton);
             }
-
             skillsPanel.revalidate();
             skillsPanel.repaint();
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

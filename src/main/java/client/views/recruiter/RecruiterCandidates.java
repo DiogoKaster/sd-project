@@ -1,45 +1,46 @@
-package client.views.candidate;
+package client.views.recruiter;
 
 import client.views.StartConnection;
+import client.views.candidate.CandidateHome;
 import com.google.gson.internal.LinkedTreeMap;
 import enums.Operations;
 import helpers.ClientConnection;
 import records.Request;
 import records.Response;
+import records.candidate.CandidateProfile;
 import records.job.CandidateSearchJobRequest;
+import records.skill.SkillInfo;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 
-public class CandidateJobs extends JDialog {
+public class RecruiterCandidates extends JDialog {
     private JPanel contentPane;
     private JButton buttonSearch;
     private JButton buttonGoBack;
-
-    private JButton buttonAddSkillToFilter;
-    private JTable jobTable;
     private JComboBox<String> skillsDropdown;
-    private JPanel skillsFilterPanel;
     private JSpinner experienceSpinner;
     private JRadioButton radioFilterAnd;
     private JRadioButton radioFilterOr;
+    private JPanel candidatesPanel;
+    private JButton buttonAddSkillToFilter;
+
     private final ButtonGroup buttonFilterType;
 
     private String token;
 
     private final List<String> skillsFilter;
 
-    public CandidateJobs(String token) {
+    public RecruiterCandidates(String token) {
         this();
         this.token = token;
     }
 
-    public CandidateJobs() {
+    public RecruiterCandidates() {
         setContentPane(contentPane);
         setMinimumSize(new Dimension(500, 500));
         setModal(true);
@@ -84,6 +85,9 @@ public class CandidateJobs extends JDialog {
         experienceSpinner.addChangeListener(e -> updateFilterCheckboxes());
 
         updateFilterCheckboxes();
+
+        // Definindo o layout do painel de candidatos para BoxLayout no eixo Y (vertical)
+        candidatesPanel.setLayout(new BoxLayout(candidatesPanel, BoxLayout.Y_AXIS));
     }
 
     private void onSearch() {
@@ -100,7 +104,7 @@ public class CandidateJobs extends JDialog {
 
         CandidateSearchJobRequest requestModel = new CandidateSearchJobRequest(skillsFilterToSend, experience, filterType);
 
-        Request<?> request = new Request<>(Operations.SEARCH_JOB, this.token, requestModel);
+        Request<?> request = new Request<>(Operations.SEARCH_CANDIDATE, this.token, requestModel);
 
         clientConnection.send(request);
 
@@ -117,13 +121,44 @@ public class CandidateJobs extends JDialog {
             assert response != null;
             LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) response.data();
 
-            List<?> jobSet = (List<?>) data.get("jobset");
-            for (Object job : jobSet) {
-                LinkedTreeMap<String, String> jobMap = (LinkedTreeMap<String, String>) job;
-                System.out.println(jobMap.get("skill"));
-                System.out.println(jobMap.get("experience"));
+            List<?> candidateList = (List<?>) data.get("profile");
+
+            Map<String, CandidateProfile> candidateProfilesMap = new HashMap<>();
+            for (Object candidate : candidateList) {
+                LinkedTreeMap<String, String> candidateMap = (LinkedTreeMap<String, String>) candidate;
+
+                String idUser = candidateMap.get("id_user");
+                String skill = candidateMap.get("skill");
+                String experienceValue = candidateMap.get("experience");
+                String skillId = candidateMap.get("id");
+
+                SkillInfo skillInfo = new SkillInfo(skill, experienceValue, skillId);
+
+                CandidateProfile candidateProfile = candidateProfilesMap.get(idUser);
+                if (candidateProfile == null) {
+                    List<SkillInfo> skillList = new ArrayList<>();
+                    skillList.add(skillInfo);
+                    candidateProfile = new CandidateProfile(idUser, "Candidate " + idUser, skillList);
+                } else {
+                    candidateProfile.skillList().add(skillInfo);
+                }
+                candidateProfilesMap.put(idUser, candidateProfile);
             }
 
+            List<CandidateProfile> candidateProfiles = new ArrayList<>(candidateProfilesMap.values());
+
+            candidatesPanel.removeAll();
+
+            for (CandidateProfile profile : candidateProfiles) {
+                JButton candidateButton = new JButton("Candidate ID: " + profile.idUser());
+                candidateButton.addActionListener(e -> {
+                    RecruiterCandidate recruiterCandidate = new RecruiterCandidate(this.token, profile.idUser(), profile.skillList());
+                    recruiterCandidate.setVisible(true);
+                });
+                candidatesPanel.add(candidateButton);
+            }
+            candidatesPanel.revalidate();
+            candidatesPanel.repaint();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -136,12 +171,6 @@ public class CandidateJobs extends JDialog {
             System.out.println("Skill adicionada: " + selectedSkill);
         }
         updateFilterCheckboxes();
-    }
-
-    private void onGoBack() {
-        dispose();
-        CandidateHome candidateHome = new CandidateHome(this.token);
-        candidateHome.setVisible(true);
     }
 
     private String getSelectedFilterType() {
@@ -162,8 +191,14 @@ public class CandidateJobs extends JDialog {
         radioFilterOr.setEnabled(enableFilters);
     }
 
+    private void onGoBack() {
+        dispose();
+        RecruiterHome recruiterHome = new RecruiterHome(this.token);
+        recruiterHome.setVisible(true);
+    }
+
     public static void main(String[] args) {
-        CandidateJobs dialog = new CandidateJobs();
+        RecruiterCandidates dialog = new RecruiterCandidates();
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);

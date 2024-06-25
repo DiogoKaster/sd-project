@@ -5,6 +5,7 @@ import enums.Operations;
 import enums.Statuses;
 import models.*;
 import records.Response;
+import records.job.JobInfo;
 import records.job.RecruiterLookupJobSetResponse;
 import records.skill.SkillInfo;
 import server.middlewares.Auth;
@@ -21,6 +22,8 @@ public class JobController {
         try {
             String skillName = (String) data.get("skill");
             Integer experience = Integer.valueOf((String) data.get("experience"));
+            String available = (String) data.get("available");
+            String searchable = (String) data.get("searchable");
 
             Recruiter recruiter = databaseConnection.select(auth.getAuthId(token), Recruiter.class);
             if (recruiter == null) {
@@ -36,6 +39,8 @@ public class JobController {
             job.setRecruiter(recruiter);
             job.setSkill(skill);
             job.setYearsOfExperience(experience);
+            job.setAvailable(available);
+            job.setSearchable(searchable);
 
             databaseConnection.insert(job, Job.class);
 
@@ -96,9 +101,11 @@ public class JobController {
 
             String skill = jobInfo.getSkill().getName();
             String experience = jobInfo.getYearsOfExperience().toString();
+            String available = jobInfo.getAvailable();
+            String searchable = jobInfo.getSearchable();
             String id = jobInfo.getId().toString();
 
-            SkillInfo responseModel = new SkillInfo(skill, experience, id);
+            JobInfo responseModel = new JobInfo(skill, experience, id, available, searchable);
 
             return new Response<>(Operations.LOOKUP_JOB, Statuses.SUCCESS, responseModel);
         } catch (Exception e) {
@@ -217,6 +224,72 @@ public class JobController {
         } catch (Exception e) {
             System.out.println("[LOG]: ERRO FEIO DE EXCEPTION NO LOOKUPJOBSET");
             return new Response<>(Operations.LOOKUP_JOBSET, Statuses.ERROR);
+        }
+    }
+
+    public static Response<?> available(String token, LinkedTreeMap<String, ?> data) {
+        try {
+            Integer jobId = Integer.valueOf((String) data.get("id"));
+            String available = (String) data.get("available");
+
+            Recruiter recruiter = databaseConnection.selectWithJobs(auth.getAuthId(token), Recruiter.class);
+            if (recruiter == null) {
+                return new Response<>(Operations.SET_JOB_AVAILABLE, Statuses.USER_NOT_FOUND);
+            }
+
+            Job job = null;
+            for (Job rj : recruiter.getJobs()) {
+                if (rj.getId().equals(jobId)) {
+                    job = rj;
+                    break;
+                }
+            }
+
+            if (job == null) {
+                return new Response<>(Operations.SET_JOB_AVAILABLE, Statuses.JOB_NOT_FOUND);
+            }
+
+            job.setAvailable(available);
+
+            databaseConnection.update(job, Job.class);
+
+            return new Response<>(Operations.SET_JOB_AVAILABLE, Statuses.SUCCESS);
+        } catch (Exception e) {
+            System.out.println("[LOG]: ERRO FEIO DE EXCEPTION NO SET_JOB_AVAILABLE");
+            return new Response<>(Operations.SET_JOB_AVAILABLE, Statuses.ERROR);
+        }
+    }
+
+    public static Response<?> searchable(String token, LinkedTreeMap<String, ?> data) {
+        try {
+            Integer jobId = Integer.valueOf((String) data.get("id"));
+            String searchable = (String) data.get("searchable");
+
+            Recruiter recruiter = databaseConnection.selectWithJobs(auth.getAuthId(token), Recruiter.class);
+            if (recruiter == null) {
+                return new Response<>(Operations.SET_JOB_SEARCHABLE, Statuses.USER_NOT_FOUND);
+            }
+
+            Job job = null;
+            for (Job rj : recruiter.getJobs()) {
+                if (rj.getId().equals(jobId)) {
+                    job = rj;
+                    break;
+                }
+            }
+
+            if (job == null) {
+                return new Response<>(Operations.SET_JOB_SEARCHABLE, Statuses.JOB_NOT_FOUND);
+            }
+
+            job.setSearchable(searchable);
+
+            databaseConnection.update(job, Job.class);
+
+            return new Response<>(Operations.SET_JOB_SEARCHABLE, Statuses.SUCCESS);
+        } catch (Exception e) {
+            System.out.println("[LOG]: ERRO FEIO DE EXCEPTION NO SET_JOB_SEARCHABLE");
+            return new Response<>(Operations.SET_JOB_SEARCHABLE, Statuses.ERROR);
         }
     }
 }
