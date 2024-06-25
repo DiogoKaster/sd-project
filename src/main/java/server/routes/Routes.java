@@ -138,6 +138,21 @@ public class Routes {
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
                 return Objects.requireNonNullElseGet(tokenValid, () -> JobController.search(data));
             }
+            case SET_JOB_AVAILABLE -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return Objects.requireNonNullElseGet(tokenValid, () -> JobController.available(request.token(), data));
+            }
+            case SET_JOB_SEARCHABLE -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return Objects.requireNonNullElseGet(tokenValid, () -> JobController.searchable(request.token(), data));
+            }
+            case SEARCH_CANDIDATE -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return Objects.requireNonNullElseGet(tokenValid, () -> CandidateController.search(data));
+            }
 
             default -> {
                 return new Response<>(operation, Statuses.INVALID_OPERATION);

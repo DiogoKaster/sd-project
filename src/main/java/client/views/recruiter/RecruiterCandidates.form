@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="client.views.recruiter.RecruiterJobCreate">
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="client.views.recruiter.RecruiterCandidates">
   <grid id="cbd77" binding="contentPane" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="10" left="10" bottom="10" right="10"/>
     <constraints>
-      <xy x="48" y="54" width="436" height="321"/>
+      <xy x="48" y="54" width="436" height="310"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -29,15 +29,15 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="e7465" class="javax.swing.JButton" binding="buttonInclude">
+              <component id="e7465" class="javax.swing.JButton" binding="buttonSearch">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text value="INCLUDE"/>
+                  <text value="SEARCH"/>
                 </properties>
               </component>
-              <component id="5723f" class="javax.swing.JButton" binding="buttonCancel">
+              <component id="5723f" class="javax.swing.JButton" binding="buttonGoBack">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -49,7 +49,7 @@
           </grid>
         </children>
       </grid>
-      <grid id="e3588" layout-manager="GridLayoutManager" row-count="9" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="e3588" layout-manager="GridLayoutManager" row-count="8" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -57,88 +57,72 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="5edfe" class="javax.swing.JLabel">
+          <component id="18d6" class="javax.swing.JLabel">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Skill necessária para a vaga:"/>
+              <text value="Seleciona as skills:"/>
             </properties>
           </component>
-          <vspacer id="b2bb1">
-            <constraints>
-              <grid row="8" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-            </constraints>
-          </vspacer>
-          <component id="29be1" class="javax.swing.JComboBox" binding="skillsDropdown">
+          <component id="1e94d" class="javax.swing.JComboBox" binding="skillsDropdown">
             <constraints>
               <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
           </component>
-          <component id="ef9b5" class="javax.swing.JLabel">
+          <component id="1514" class="javax.swing.JLabel">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Tempo de experiência necessário:"/>
+              <text value="Selecione a experience:"/>
             </properties>
           </component>
-          <component id="d2dd3" class="javax.swing.JSpinner" binding="experienceSpinner">
+          <component id="a00ec" class="javax.swing.JSpinner" binding="experienceSpinner">
             <constraints>
-              <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="4" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
           </component>
-          <component id="e3201" class="javax.swing.JLabel">
+          <component id="9d1eb" class="javax.swing.JLabel">
             <constraints>
-              <grid row="4" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="5" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Vaga available:"/>
+              <text value="Selecione o filtro:"/>
             </properties>
           </component>
-          <component id="57ab4" class="javax.swing.JRadioButton" binding="availableYes">
+          <grid id="60833" binding="candidatesPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
             <constraints>
-              <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="7" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children/>
+          </grid>
+          <component id="d0c89" class="javax.swing.JRadioButton" binding="radioFilterAnd">
+            <constraints>
+              <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <selected value="false"/>
-              <text value="Yes"/>
+              <text value="AND"/>
             </properties>
           </component>
-          <component id="8bad6" class="javax.swing.JRadioButton" binding="availableNo">
+          <component id="ee9cf" class="javax.swing.JRadioButton" binding="radioFilterOr">
             <constraints>
-              <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="No"/>
+              <text value="OR"/>
             </properties>
           </component>
-          <component id="1e089" class="javax.swing.JLabel">
+          <component id="68e68" class="javax.swing.JButton" binding="buttonAddSkillToFilter">
             <constraints>
-              <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Vaga searchable:"/>
-            </properties>
-          </component>
-          <component id="7189b" class="javax.swing.JRadioButton" binding="searchableYes">
-            <constraints>
-              <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <selected value="false"/>
-              <text value="Yes"/>
-            </properties>
-          </component>
-          <component id="7c4d5" class="javax.swing.JRadioButton" binding="searchableNo">
-            <constraints>
-              <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <hideActionText value="true"/>
-              <text value="No"/>
+              <text value="ADD"/>
             </properties>
           </component>
         </children>

@@ -192,4 +192,14 @@ public class DatabaseConnection {
             return null;
         }
     }
+
+    public List<Candidate> selectWithSkills() {
+        try (Session session = factory.openSession()) {
+            String hql = "FROM Candidate c LEFT JOIN FETCH c.candidateSkills";
+            return (List<Candidate>) session.createQuery(hql, Candidate.class).list();
+        } catch (Exception e) {
+            System.out.println("[LOG]: Erro na seleção do candidato com skills.");
+            return null;
+        }
+    }
 }

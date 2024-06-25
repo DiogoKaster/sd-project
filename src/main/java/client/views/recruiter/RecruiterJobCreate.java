@@ -12,6 +12,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Objects;
 
 public class RecruiterJobCreate extends JDialog {
     private JPanel contentPane;
@@ -19,6 +21,14 @@ public class RecruiterJobCreate extends JDialog {
     private JButton buttonCancel;
     private JComboBox<String> skillsDropdown;
     private JSpinner experienceSpinner;
+    private JRadioButton availableYes;
+    private JRadioButton availableNo;
+    private JRadioButton searchableYes;
+    private JRadioButton searchableNo;
+
+    private final ButtonGroup availableButtonGroup;
+
+    private final ButtonGroup searchableButtonGroup;
 
     private String token;
 
@@ -48,6 +58,17 @@ public class RecruiterJobCreate extends JDialog {
         skillsDropdown.addItem("TypeScript");
         skillsDropdown.addItem("Ruby");
 
+        availableButtonGroup = new ButtonGroup();
+        availableButtonGroup.add(availableYes);
+        availableButtonGroup.add(availableNo);
+
+        searchableButtonGroup = new ButtonGroup();
+        searchableButtonGroup.add(searchableYes);
+        searchableButtonGroup.add(searchableNo);
+
+        availableYes.setSelected(true);
+        searchableYes.setSelected(true);
+
         SpinnerNumberModel model = new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1);
         experienceSpinner.setModel(model);
 
@@ -66,8 +87,10 @@ public class RecruiterJobCreate extends JDialog {
 
         String selectedSkill = (String) skillsDropdown.getSelectedItem();
         String experience = experienceSpinner.getValue().toString();
+        String available = Objects.requireNonNull(getSelectedAvailable()).toUpperCase();
+        String searchable = Objects.requireNonNull(getSelectedSearchable()).toUpperCase();
 
-        RecruiterIncludeJobRequest requestModel = new RecruiterIncludeJobRequest(selectedSkill, experience);
+        RecruiterIncludeJobRequest requestModel = new RecruiterIncludeJobRequest(selectedSkill, experience, available, searchable);
         Request<RecruiterIncludeJobRequest> request = new Request<>(Operations.INCLUDE_JOB, this.token, requestModel);
 
         clientConnection.send(request);
@@ -89,6 +112,26 @@ public class RecruiterJobCreate extends JDialog {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String getSelectedAvailable() {
+        for (AbstractButton button : Collections.list(availableButtonGroup.getElements())) {
+            if (button.isSelected()) {
+                return button.getText();
+            }
+        }
+
+        return null;
+    }
+
+    private String getSelectedSearchable() {
+        for (AbstractButton button : Collections.list(searchableButtonGroup.getElements())) {
+            if (button.isSelected()) {
+                return button.getText();
+            }
+        }
+
+        return null;
     }
 
     private void onCancel() {
