@@ -156,17 +156,17 @@ public class CandidateController {
             Candidate candidate = databaseConnection.selectWithChosen(userId, Candidate.class);
             Recruiter recruiter = databaseConnection.selectWithChosen(auth.getAuthId(token), Recruiter.class);
 
-            boolean alreadyChosen = false;
-            for (ChosenCandidate chosenCandidate : recruiter.getChosenCandidates()) {
-                if (chosenCandidate.getCandidate().getId().equals(candidate.getId())) {
-                    alreadyChosen = true;
-                    break;
-                }
-            }
-
-            if (alreadyChosen) {
-                return new Response<>(Operations.CHOOSE_CANDIDATE, Statuses.ERROR);
-            }
+//            boolean alreadyChosen = false;
+//            for (ChosenCandidate chosenCandidate : recruiter.getChosenCandidates()) {
+//                if (chosenCandidate.getCandidate().getId().equals(candidate.getId())) {
+//                    alreadyChosen = true;
+//                    break;
+//                }
+//            }
+//
+//            if (alreadyChosen) {
+//                return new Response<>(Operations.CHOOSE_CANDIDATE, Statuses.ERROR);
+//            }
 
             ChosenCandidate newChosenCandidate = new ChosenCandidate();
             newChosenCandidate.setCandidate(candidate);

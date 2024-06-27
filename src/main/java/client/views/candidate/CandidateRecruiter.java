@@ -51,7 +51,7 @@ public class CandidateRecruiter extends JDialog {
         JLabel nameLabel = new JLabel("Name: " + this.name);
         JLabel industryLabel = new JLabel("Industry: " + this.industry);
         JLabel emailLabel = new JLabel("Email: " + this.email);
-        JLabel descriptionLabel = new JLabel("Industry: " + this.description);
+        JLabel descriptionLabel = new JLabel("Description: " + this.description);
         companyPanel.add(line);
         companyPanel.add(nameLabel);
         companyPanel.add(industryLabel);
