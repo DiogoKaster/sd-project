@@ -35,4 +35,7 @@ public class Recruiter {
 
     @OneToMany(mappedBy = "recruiter", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Job> jobs = new HashSet<>();
+
+    @OneToMany(mappedBy = "recruiter", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ChosenCandidate> chosenCandidates = new HashSet<>();
 }

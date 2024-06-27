@@ -123,7 +123,6 @@ public class CandidateJobs extends JDialog {
                 System.out.println(jobMap.get("skill"));
                 System.out.println(jobMap.get("experience"));
             }
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

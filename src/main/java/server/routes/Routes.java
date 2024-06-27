@@ -153,6 +153,16 @@ public class Routes {
                 LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
                 return Objects.requireNonNullElseGet(tokenValid, () -> CandidateController.search(data));
             }
+            case CHOOSE_CANDIDATE -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return Objects.requireNonNullElseGet(tokenValid, () -> CandidateController.choose(request.token(), data));
+            }
+            case GET_COMPANY -> {
+                Response<?> tokenValid = isTokenValid(operation, request.token());
+                LinkedTreeMap<String, ?> data = (LinkedTreeMap<String, ?>) request.data();
+                return Objects.requireNonNullElseGet(tokenValid, () -> CandidateController.companies(request.token()));
+            }
 
             default -> {
                 return new Response<>(operation, Statuses.INVALID_OPERATION);

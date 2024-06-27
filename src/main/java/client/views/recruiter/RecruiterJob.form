@@ -3,7 +3,7 @@
   <grid id="cbd77" binding="contentPane" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="10" left="10" bottom="10" right="10"/>
     <constraints>
-      <xy x="48" y="54" width="436" height="391"/>
+      <xy x="48" y="54" width="436" height="406"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -73,11 +73,6 @@
               <text value="Skill da vaga:"/>
             </properties>
           </component>
-          <vspacer id="96a2f">
-            <constraints>
-              <grid row="10" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-            </constraints>
-          </vspacer>
           <component id="d94a6" class="javax.swing.JComboBox" binding="skillsDropdown">
             <constraints>
               <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
@@ -160,6 +155,14 @@
             </constraints>
             <properties>
               <text value="SET SEARCHABLE"/>
+            </properties>
+          </component>
+          <component id="9b73e" class="javax.swing.JButton" binding="buttonSearchCandidates">
+            <constraints>
+              <grid row="10" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="SEARCH CANDIDATES"/>
             </properties>
           </component>
         </children>

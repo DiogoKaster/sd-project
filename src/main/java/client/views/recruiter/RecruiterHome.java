@@ -18,7 +18,6 @@ public class RecruiterHome extends JDialog {
     private JButton buttonLogout;
     private JButton buttonDelete;
     private JButton buttonJobs;
-    private JButton buttonCandidates;
 
     private String token;
 
@@ -39,8 +38,6 @@ public class RecruiterHome extends JDialog {
         buttonDelete.addActionListener(e -> onDelete());
 
         buttonJobs.addActionListener(e -> onGoToJobs());
-
-        buttonCandidates.addActionListener(e -> goToCandidates());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -114,12 +111,6 @@ public class RecruiterHome extends JDialog {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void goToCandidates() {
-        dispose();
-        RecruiterCandidates recruiterCandidates = new RecruiterCandidates(this.token);
-        recruiterCandidates.setVisible(true);
     }
 
     private void onGoToJobs() {

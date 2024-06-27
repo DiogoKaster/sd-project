@@ -29,4 +29,7 @@ public class Candidate {
 
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CandidateSkill> candidateSkills = new HashSet<>();
+
+    @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ChosenCandidate> chosenCandidates = new HashSet<>();
 }

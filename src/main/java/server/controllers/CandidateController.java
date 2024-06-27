@@ -4,16 +4,11 @@ import com.google.gson.internal.LinkedTreeMap;
 import enums.Operations;
 import enums.Roles;
 import enums.Statuses;
-import models.Candidate;
-import models.CandidateSkill;
-import models.DatabaseConnection;
-import models.Job;
+import models.*;
 import records.Response;
-import records.candidate.CandidateInfo;
-import records.candidate.CandidateLoginResponse;
-import records.candidate.CandidateLookupResponse;
-import records.candidate.CandidateSearchResponse;
+import records.candidate.*;
 import records.job.RecruiterLookupJobSetResponse;
+import records.recruiter.RecruiterInfo;
 import records.skill.SkillInfo;
 import server.middlewares.Auth;
 
@@ -112,9 +107,7 @@ public class CandidateController {
             List<CandidateInfo> candidateInfoList = new ArrayList<>();
 
             for (Candidate candidate : allCandidates) {
-                System.out.println(candidate.getName());
                 for (CandidateSkill candidateSkill : candidate.getCandidateSkills()) {
-                    System.out.println(candidateSkill.getSkill());
                     boolean matches = false;
 
                     if (filterType != null && !skillsFilter.isEmpty() && experience != null) {
@@ -139,7 +132,8 @@ public class CandidateController {
                                 candidateSkill.getSkill().getName(),
                                 candidateSkill.getYearsOfExperience().toString(),
                                 candidateSkill.getId().toString(),
-                                candidate.getId().toString()
+                                candidate.getId().toString(),
+                                candidate.getName()
                         );
                         candidateInfoList.add(candidateInfo);
                     }
@@ -153,6 +147,60 @@ public class CandidateController {
         } catch (Exception e) {
             System.out.println("[LOG]: ERRO FEIO DE EXCEPTION NO SEARCH_CANDIDATE");
             return new Response<>(Operations.SEARCH_CANDIDATE, Statuses.ERROR);
+        }
+    }
+
+    public static Response<?> choose(String token, LinkedTreeMap<String, ?> data) {
+        try {
+            Integer userId = Integer.valueOf((String) data.get("id_user"));
+            Candidate candidate = databaseConnection.selectWithChosen(userId, Candidate.class);
+            Recruiter recruiter = databaseConnection.selectWithChosen(auth.getAuthId(token), Recruiter.class);
+
+            boolean alreadyChosen = false;
+            for (ChosenCandidate chosenCandidate : recruiter.getChosenCandidates()) {
+                if (chosenCandidate.getCandidate().getId().equals(candidate.getId())) {
+                    alreadyChosen = true;
+                    break;
+                }
+            }
+
+            if (alreadyChosen) {
+                return new Response<>(Operations.CHOOSE_CANDIDATE, Statuses.ERROR);
+            }
+
+            ChosenCandidate newChosenCandidate = new ChosenCandidate();
+            newChosenCandidate.setCandidate(candidate);
+            newChosenCandidate.setRecruiter(recruiter);
+
+            databaseConnection.insert(newChosenCandidate, ChosenCandidate.class);
+
+            return new Response<>(Operations.CHOOSE_CANDIDATE, Statuses.SUCCESS);
+        } catch (Exception e) {
+            return new Response<>(Operations.CHOOSE_CANDIDATE, Statuses.ERROR);
+        }
+    }
+
+    public static Response<?> companies(String token) {
+        try {
+            Candidate candidate = databaseConnection.selectWithChosen(auth.getAuthId(token), Candidate.class);
+
+            List<RecruiterInfo> recruiterInfoList = new ArrayList<>();
+            for (ChosenCandidate chosenCandidate : candidate.getChosenCandidates()) {
+                String recruiterInfoName = chosenCandidate.getRecruiter().getName();
+                String recruiterInfoIndustry = chosenCandidate.getRecruiter().getIndustry();
+                String recruiterInfoEmail = chosenCandidate.getRecruiter().getEmail();
+                String recruiterInfoDescription = chosenCandidate.getRecruiter().getDescription();
+
+                RecruiterInfo recruiterInfo = new RecruiterInfo(recruiterInfoName, recruiterInfoIndustry, recruiterInfoEmail, recruiterInfoDescription);
+                recruiterInfoList.add(recruiterInfo);
+            }
+
+            String recruiterInfoListSize = String.valueOf(recruiterInfoList.size());
+            CandidateGetCompanyResponse responseModel = new CandidateGetCompanyResponse(recruiterInfoListSize, recruiterInfoList);
+
+            return new Response<>(Operations.GET_COMPANY, Statuses.SUCCESS, responseModel);
+        } catch (Exception e) {
+            return new Response<>(Operations.GET_COMPANY, Statuses.ERROR);
         }
     }
 }

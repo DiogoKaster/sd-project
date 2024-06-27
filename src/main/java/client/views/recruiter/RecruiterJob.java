@@ -1,7 +1,6 @@
 package client.views.recruiter;
 
 import client.views.StartConnection;
-import client.views.candidate.CandidateSkills;
 import com.google.gson.internal.LinkedTreeMap;
 import enums.Operations;
 import enums.Statuses;
@@ -30,6 +29,7 @@ public class RecruiterJob extends JDialog {
     private JRadioButton searchableNo;
     private JButton buttonSetAvailable;
     private JButton buttonSetSearchable;
+    private JButton buttonSearchCandidates;
 
     private final ButtonGroup availableButtonGroup;
 
@@ -60,6 +60,8 @@ public class RecruiterJob extends JDialog {
         buttonSetAvailable.addActionListener(e -> setAvailable());
 
         buttonSetSearchable.addActionListener(e -> setSearchable());
+
+        buttonSearchCandidates.addActionListener(e -> goSearchCandidates());
 
         skillsDropdown.addItem("NodeJs");
         skillsDropdown.addItem("JavaScript");
@@ -274,6 +276,12 @@ public class RecruiterJob extends JDialog {
         }
 
         return null;
+    }
+
+    private void goSearchCandidates() {
+        dispose();
+        RecruiterCandidates recruiterCandidates = new RecruiterCandidates(this.token);
+        recruiterCandidates.setVisible(true);
     }
 
     private void onGoBack() {
