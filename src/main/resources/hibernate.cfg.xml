@@ -14,5 +14,6 @@
         <mapping class="models.Skill" />
         <mapping class="models.CandidateSkill" />
         <mapping class="models.Job" />
+        <mapping class="models.ChosenCandidate" />
     </session-factory>
 </hibernate-configuration>

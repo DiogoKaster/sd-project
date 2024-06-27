@@ -86,7 +86,6 @@ public class RecruiterCandidates extends JDialog {
 
         updateFilterCheckboxes();
 
-        // Definindo o layout do painel de candidatos para BoxLayout no eixo Y (vertical)
         candidatesPanel.setLayout(new BoxLayout(candidatesPanel, BoxLayout.Y_AXIS));
     }
 
@@ -131,6 +130,7 @@ public class RecruiterCandidates extends JDialog {
                 String skill = candidateMap.get("skill");
                 String experienceValue = candidateMap.get("experience");
                 String skillId = candidateMap.get("id");
+                String name = candidateMap.get("name");
 
                 SkillInfo skillInfo = new SkillInfo(skill, experienceValue, skillId);
 
@@ -138,7 +138,7 @@ public class RecruiterCandidates extends JDialog {
                 if (candidateProfile == null) {
                     List<SkillInfo> skillList = new ArrayList<>();
                     skillList.add(skillInfo);
-                    candidateProfile = new CandidateProfile(idUser, "Candidate " + idUser, skillList);
+                    candidateProfile = new CandidateProfile(idUser, name, skillList);
                 } else {
                     candidateProfile.skillList().add(skillInfo);
                 }
@@ -150,7 +150,7 @@ public class RecruiterCandidates extends JDialog {
             candidatesPanel.removeAll();
 
             for (CandidateProfile profile : candidateProfiles) {
-                JButton candidateButton = new JButton("Candidate ID: " + profile.idUser());
+                JButton candidateButton = new JButton("Candidate: " + profile.name());
                 candidateButton.addActionListener(e -> {
                     RecruiterCandidate recruiterCandidate = new RecruiterCandidate(this.token, profile.idUser(), profile.skillList());
                     recruiterCandidate.setVisible(true);

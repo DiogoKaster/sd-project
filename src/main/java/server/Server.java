@@ -4,6 +4,7 @@ import java.net.*;
 import helpers.Json;
 import records.*;
 import server.routes.Routes;
+import server.views.UserConnected;
 
 public class Server extends Thread{
     private final Socket client;
@@ -43,6 +44,7 @@ public class Server extends Thread{
     @Override
     public void run(){
         System.out.println("New thread started");
+        System.out.println(client.getInetAddress().getHostAddress());
 
         try(
             client;

@@ -196,9 +196,28 @@ public class DatabaseConnection {
     public List<Candidate> selectWithSkills() {
         try (Session session = factory.openSession()) {
             String hql = "FROM Candidate c LEFT JOIN FETCH c.candidateSkills";
-            return (List<Candidate>) session.createQuery(hql, Candidate.class).list();
+            return session.createQuery(hql, Candidate.class).list();
         } catch (Exception e) {
             System.out.println("[LOG]: Erro na seleção do candidato com skills.");
+            return null;
+        }
+    }
+
+    public <T> T selectWithChosen(int id, Class<T> returnClass) {
+        try (Session session = factory.openSession()) {
+            String hql;
+            if (returnClass == Candidate.class) {
+                hql = "FROM Candidate c LEFT JOIN FETCH c.chosenCandidates cc LEFT JOIN FETCH cc.recruiter WHERE c.id = :id";
+            } else if (returnClass == Recruiter.class) {
+                hql = "FROM Recruiter r LEFT JOIN FETCH r.chosenCandidates cc LEFT JOIN FETCH cc.candidate WHERE r.id = :id";
+            } else {
+                throw new IllegalArgumentException("Classe desconhecida: " + returnClass.getName());
+            }
+            return session.createQuery(hql, returnClass)
+                    .setParameter("id", id)
+                    .uniqueResult();
+        } catch (Exception e) {
+            System.out.println("[LOG]: Erro na seleção do objeto com relacionamentos.");
             return null;
         }
     }

@@ -7,12 +7,14 @@ import models.*;
 import records.Response;
 import records.job.JobInfo;
 import records.job.RecruiterLookupJobSetResponse;
+import records.job.RecruiterSearchResponse;
 import records.skill.SkillInfo;
 import server.middlewares.Auth;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class JobController {
     private static final DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
@@ -58,18 +60,21 @@ public class JobController {
                 return new Response<>(Operations.LOOKUP_JOBSET, Statuses.USER_NOT_FOUND);
             }
 
-            List<SkillInfo> jobInfoList = new ArrayList<>();
+            List<JobInfo> jobInfoList = new ArrayList<>();
             for (Job rj : recruiter.getJobs()) {
-                SkillInfo jobInfo = new SkillInfo(
+                JobInfo jobInfo = new JobInfo(
                         rj.getSkill().getName(),
                         rj.getYearsOfExperience().toString(),
-                        rj.getId().toString()
+                        rj.getId().toString(),
+                        rj.getAvailable(),
+                        rj.getSearchable()
                 );
                 jobInfoList.add(jobInfo);
             }
 
             String jobsetSize = String.valueOf(jobInfoList.size());
-            RecruiterLookupJobSetResponse responseModel = new RecruiterLookupJobSetResponse(jobsetSize, jobInfoList);
+            RecruiterLookupJobSetResponse responseModel;
+            responseModel = new RecruiterLookupJobSetResponse(jobsetSize, jobInfoList);
 
             return new Response<>(Operations.LOOKUP_JOBSET, Statuses.SUCCESS, responseModel);
         } catch (Exception e) {
@@ -187,43 +192,45 @@ public class JobController {
             Integer experience = data.get("experience") != null ? Integer.parseInt((String) data.get("experience")) : null;
 
             List<Job> allJobs = databaseConnection.selectAllJobs();
-            List<SkillInfo> jobInfoList = new ArrayList<>();
+            List<JobInfo> jobInfoList = new ArrayList<>();
 
             for (Job job : allJobs) {
                 boolean matches = false;
+                if (Objects.equals(job.getSearchable(), "YES")) {
+                    if (filterType != null && !skillsFilter.isEmpty() && experience != null) {
+                        boolean matchesSkills = skillsFilter.contains(job.getSkill().getName());
+                        boolean matchesExperience = job.getYearsOfExperience() <= experience;
 
-                if (filterType != null && !skillsFilter.isEmpty() && experience != null) {
-                    boolean matchesSkills = skillsFilter.contains(job.getSkill().getName());
-                    boolean matchesExperience = job.getYearsOfExperience() <= experience;
-
-                    if (filterType.equals("OR")) {
-                        matches = matchesSkills || matchesExperience;
-                    } else if (filterType.equals("AND")) {
-                        matches = matchesSkills && matchesExperience;
+                        if (filterType.equals("OR")) {
+                            matches = matchesSkills || matchesExperience;
+                        } else if (filterType.equals("AND")) {
+                            matches = matchesSkills && matchesExperience;
+                        }
+                    } else if (!skillsFilter.isEmpty()) {
+                        matches = skillsFilter.contains(job.getSkill().getName());
+                    } else if (experience != null) {
+                        matches = job.getYearsOfExperience() <= experience;
                     }
-                } else if (!skillsFilter.isEmpty()) {
-                    matches = skillsFilter.contains(job.getSkill().getName());
-                } else if (experience != null) {
-                    matches = job.getYearsOfExperience() <= experience;
                 }
 
                 if (matches) {
-                    SkillInfo jobInfo = new SkillInfo(
+                    JobInfo jobInfo = new JobInfo(
                             job.getSkill().getName(),
                             job.getYearsOfExperience().toString(),
-                            job.getId().toString()
+                            job.getId().toString(),
+                            job.getAvailable()
                     );
                     jobInfoList.add(jobInfo);
                 }
             }
 
             String jobsetSize = String.valueOf(jobInfoList.size());
-            RecruiterLookupJobSetResponse responseModel = new RecruiterLookupJobSetResponse(jobsetSize, jobInfoList);
+            RecruiterSearchResponse responseModel = new RecruiterSearchResponse(jobsetSize, jobInfoList);
 
-            return new Response<>(Operations.LOOKUP_JOBSET, Statuses.SUCCESS, responseModel);
+            return new Response<>(Operations.SEARCH_JOB, Statuses.SUCCESS, responseModel);
         } catch (Exception e) {
             System.out.println("[LOG]: ERRO FEIO DE EXCEPTION NO LOOKUPJOBSET");
-            return new Response<>(Operations.LOOKUP_JOBSET, Statuses.ERROR);
+            return new Response<>(Operations.SEARCH_JOB, Statuses.ERROR);
         }
     }
 
